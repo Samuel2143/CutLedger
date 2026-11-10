@@ -1,0 +1,59 @@
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+  error:
+    include-message: never
+    include-stacktrace: never
+  tomcat:
+    max-http-form-post-size: 64KB
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 2
+  application:
+    name: cutledger
+  profiles:
+    default: local
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:55432/cutledger}
+    username: ${DB_USERNAME:cutledger}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 8
+      connection-timeout: 5000
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  sql:
+    init:
+      mode: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+cutledger:
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
+  session-pepper: ${SESSION_PEPPER:}
+  demo-access-code-hash: ${DEMO_ACCESS_CODE_HASH:}
+  paypal-env: ${PAYPAL_ENV:sandbox}
+  paypal-client-id: ${PAYPAL_CLIENT_ID:}
+  paypal-client-secret: ${PAYPAL_CLIENT_SECRET:}
+  paypal-merchant-id: ${PAYPAL_MERCHANT_ID:}
+  paypal-webhook-id: ${PAYPAL_WEBHOOK_ID:}
+  gemini-api-key: ${GEMINI_API_KEY:}
+  ai-model: ${AI_MODEL:gemini-3.6-flash}
+  ai-daily-request-limit: ${AI_DAILY_REQUEST_LIMIT:200}
+logging:
+  level:
+    root: INFO
+    org.springframework.security: WARN

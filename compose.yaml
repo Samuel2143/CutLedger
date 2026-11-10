@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17.11-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+    environment:
+      POSTGRES_DB: cutledger
+      POSTGRES_USER: cutledger
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Use scripts/configure.py to initialize local settings}
+    ports:
+      - "127.0.0.1:${CUTLEDGER_DB_PORT:-55432}:5432"
+    volumes:
+      - cutledger-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U cutledger -d cutledger"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  app:
+    build: .
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DATABASE_URL: jdbc:postgresql://db:5432/cutledger
+      DB_USERNAME: cutledger
+      DB_PASSWORD: ${DB_PASSWORD:?Initialize private local settings}
+      SESSION_PEPPER: ${SESSION_PEPPER:?Initialize private local settings}
+      PUBLIC_BASE_URL: http://localhost:8080
+      PAYPAL_ENV: sandbox
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_MERCHANT_ID: ${PAYPAL_MERCHANT_ID:-}
+      PAYPAL_WEBHOOK_ID: ${PAYPAL_WEBHOOK_ID:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      AI_MODEL: gemini-3.6-flash
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+volumes:
+  cutledger-postgres:

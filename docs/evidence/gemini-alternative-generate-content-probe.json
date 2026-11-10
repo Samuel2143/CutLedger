@@ -1,0 +1,32 @@
+{
+  "observedAt": "2026-11-10T19:55:19.707848+00:00",
+  "requestedModel": "gemini-3.6-flash",
+  "api": "v1beta/models/gemini-3.6-flash:generateContent",
+  "fullValidationAndEvals": "NOT_RUN",
+  "httpStatus": 200,
+  "observedFields": [
+    "candidates",
+    "modelVersion",
+    "responseId",
+    "usageMetadata"
+  ],
+  "modelVersion": "gemini-3.6-flash",
+  "candidateCount": 1,
+  "usage": {
+    "promptTokenCount": 135,
+    "candidatesTokenCount": 284,
+    "totalTokenCount": 419,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 135
+      }
+    ],
+    "serviceTier": "standard"
+  },
+  "finishReasons": [
+    "STOP"
+  ],
+  "status": "PASS_ENVELOPE_ONLY",
+  "latencyMs": 2650
+}

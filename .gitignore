@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.local/
+node_modules/
+frontend/dist/
+backend/target/
+playwright-report/
+test-results/
+*.log
+.DS_Store
+*.pem
+*.key
+.context-plugins/
+CutLedger-Codex-Handoff.zip
+__pycache__/
+*.pyc

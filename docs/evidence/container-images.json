@@ -1,0 +1,22 @@
+{
+  "node:24.22.2-bookworm-slim": {
+    "reference": "node:24.22.2-bookworm-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9",
+    "digest": "sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9",
+    "mediaType": "application/vnd.oci.image.index.v1+json"
+  },
+  "maven:3.9.16-eclipse-temurin-17": {
+    "reference": "maven:3.9.16-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584",
+    "digest": "sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584",
+    "mediaType": "application/vnd.oci.image.index.v1+json"
+  },
+  "eclipse-temurin:17-jre-jammy": {
+    "reference": "eclipse-temurin:17-jre-jammy@sha256:2a9eb226abb654c9d1f91b53cf638d20cb3abb726d1b18a67909c29515545469",
+    "digest": "sha256:2a9eb226abb654c9d1f91b53cf638d20cb3abb726d1b18a67909c29515545469",
+    "mediaType": "application/vnd.oci.image.index.v1+json"
+  },
+  "postgres:17.11-alpine": {
+    "reference": "postgres:17.11-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac",
+    "digest": "sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac",
+    "mediaType": "application/vnd.oci.image.index.v1+json"
+  }
+}

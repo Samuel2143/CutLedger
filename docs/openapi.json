@@ -1,0 +1,1327 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CutLedger API",
+    "version": "0.1.0",
+    "description": "Sandbox only. Backend owns rights/money. All private resources enforce workspace ownership. Mutations require exact Origin. Detailed lifecycle/snapshot responses: API_CONTRACTS.md. No production-money or fake-paid endpoint."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/demo-sessions": {
+      "post": {
+        "summary": "Create or resume isolated browser workspace",
+        "operationId": "postDemo-Sessions",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "accessCode": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "summary": "Current session and CSRF token",
+        "operationId": "getSession",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diagnostics": {
+      "get": {
+        "summary": "Configuration availability, never per-payment verification",
+        "operationId": "getDiagnostics",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}": {
+      "get": {
+        "summary": "Owned campaign, current revision and permission summaries",
+        "operationId": "getCampaignsId",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/interpretations": {
+      "post": {
+        "summary": "Queue real evidence-backed extraction; durable deduplication",
+        "operationId": "postCampaignsIdInterpretations",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterpretInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interpretations/{id}": {
+      "get": {
+        "summary": "Stored interpretation; polling never invokes a model",
+        "operationId": "getInterpretationsId",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/revisions": {
+      "post": {
+        "summary": "Explicit immutable usage confirmation",
+        "operationId": "postCampaignsIdRevisions",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirmation"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getCampaignsIdRevisions",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/revisions/{revision}": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getCampaignsIdRevisionsRevision",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/revisions/{revision}/assessment": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getCampaignsIdRevisionsRevisionAssessment",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes/{id}": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getQuotesId",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getPaymentsId",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/receipt": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getPaymentsIdReceipt",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies/{id}": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getPoliciesId",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/entitlements": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getCampaignsIdEntitlements",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/activity": {
+      "get": {
+        "summary": "Read owned domain record; no monetary mutation",
+        "operationId": "getCampaignsIdActivity",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{id}/quotes": {
+      "post": {
+        "summary": "Immutable ten-minute quote or NO_PURCHASE_REQUIRED",
+        "operationId": "postCampaignsIdQuotes",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "revisionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "revisionId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes/{id}/payments": {
+      "post": {
+        "summary": "Accept exact server snapshot and durably queue one Sandbox order",
+        "operationId": "postQuotesIdPayments",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "acceptedSnapshotHash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "acceptedSnapshotHash"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/capture": {
+      "post": {
+        "summary": "Verify buyer approval then commit one capture while quote valid",
+        "operationId": "postPaymentsIdCapture",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "returnedOrderId": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "returnedOrderId"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/cancel": {
+      "post": {
+        "summary": "Cancel only precommit",
+        "operationId": "postPaymentsIdCancel",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}/reconcile": {
+      "post": {
+        "summary": "Queue provider reads only, never replacement capture",
+        "operationId": "postPaymentsIdReconcile",
+        "security": [
+          {
+            "workspaceCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/paypal": {
+      "post": {
+        "summary": "Authenticate signature through PayPal, persist/deduplicate then schedule reads",
+        "operationId": "postWebhooksPaypal",
+        "security": [],
+        "parameters": [
+          {
+            "name": "PAYPAL-AUTH-ALGO",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            }
+          },
+          {
+            "name": "PAYPAL-CERT-URL",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            }
+          },
+          {
+            "name": "PAYPAL-TRANSMISSION-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            }
+          },
+          {
+            "name": "PAYPAL-TRANSMISSION-SIG",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            }
+          },
+          {
+            "name": "PAYPAL-TRANSMISSION-TIME",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8192
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response; domain fields specified in API_CONTRACTS.md"
+          },
+          "default": {
+            "description": "Sanitized problem; no raw provider body",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "workspaceCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cl_session"
+      }
+    },
+    "schemas": {
+      "Usage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "distributions",
+          "territories",
+          "platforms",
+          "startDate",
+          "endDateExclusive"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          },
+          "distributions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "ORGANIC",
+                "PAID_ADS"
+              ]
+            }
+          },
+          "territories": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 30,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "platforms": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDateExclusive": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code",
+          "detail",
+          "traceId"
+        ]
+      },
+      "InterpretInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "baseRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "brief",
+          "baseRevisionId"
+        ]
+      },
+      "Confirmation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "interpretationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "baseRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "origin": {
+            "enum": [
+              "MANUAL",
+              "AI_CONFIRMED"
+            ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          },
+          "confirmed": {
+            "const": true
+          },
+          "resolvedIssueIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "issueResolutions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "issueId": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "resolvedValue": {},
+                "acknowledged": {
+                  "const": true
+                }
+              },
+              "required": [
+                "issueId",
+                "field",
+                "resolvedValue",
+                "acknowledged"
+              ]
+            }
+          },
+          "excludedRequirementsAcknowledged": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "userEditedFields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "distributions",
+                "territories",
+                "platforms",
+                "startDate",
+                "endDateExclusive"
+              ]
+            }
+          }
+        },
+        "required": [
+          "baseRevisionId",
+          "origin",
+          "usage",
+          "confirmed"
+        ]
+      }
+    }
+  }
+}

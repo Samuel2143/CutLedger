@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cutledger.example/schemas/interpretation-v1.json",
+  "title": "CutLedger proposed usage edits v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "distributionEdit",
+    "territoryEdit",
+    "platformEdit",
+    "dateEdit",
+    "unsupportedRequests",
+    "issues"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "distributionEdit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "values",
+        "certainty",
+        "evidence"
+      ],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "UNCHANGED",
+            "REPLACE",
+            "ADD",
+            "REMOVE"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ORGANIC",
+              "PAID_ADS"
+            ]
+          },
+          "maxItems": 30
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "EXPLICIT",
+            "INFERRED",
+            "AMBIGUOUS"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "maxItems": 12
+        }
+      }
+    },
+    "territoryEdit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "values",
+        "certainty",
+        "evidence"
+      ],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "UNCHANGED",
+            "REPLACE",
+            "ADD",
+            "REMOVE"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "maxItems": 30
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "EXPLICIT",
+            "INFERRED",
+            "AMBIGUOUS"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "maxItems": 12
+        }
+      }
+    },
+    "platformEdit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "values",
+        "certainty",
+        "evidence"
+      ],
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "UNCHANGED",
+            "REPLACE",
+            "ADD",
+            "REMOVE"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "maxItems": 30
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "EXPLICIT",
+            "INFERRED",
+            "AMBIGUOUS"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "maxItems": 12
+        }
+      }
+    },
+    "dateEdit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startDate",
+        "endDateExclusive",
+        "durationDays",
+        "durationMonths",
+        "certainty",
+        "evidence"
+      ],
+      "properties": {
+        "startDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "ISO YYYY-MM-DD date; server strictly validates calendar value."
+        },
+        "endDateExclusive": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "ISO YYYY-MM-DD date; server strictly validates calendar value."
+        },
+        "durationDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "durationMonths": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 120
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "EXPLICIT",
+            "INFERRED",
+            "AMBIGUOUS"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "maxItems": 12
+        }
+      }
+    },
+    "unsupportedRequests": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement",
+          "evidence"
+        ],
+        "properties": {
+          "requirement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "maxItems": 12
+          }
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "kind",
+          "message",
+          "evidence"
+        ],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "DISTRIBUTION",
+              "TERRITORY",
+              "PLATFORM",
+              "START_DATE",
+              "END_DATE",
+              "DURATION",
+              "OTHER"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "AMBIGUOUS",
+              "CONFLICT",
+              "MISSING",
+              "UNSUPPORTED"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "maxItems": 12
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+.git
+.env*
+.local
+**/node_modules
+frontend/dist
+backend/target
+test-results
+playwright-report
+docs/evidence/*.png

@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-11-10T20:27:10.536801+00:00",
+  "imageId": "sha256:9586d8ca625838a3571c36989eaec58d1537b54a748329b51815da15a4095f3a",
+  "tag": "cutledger:phase3",
+  "readiness": "UP",
+  "dockerHealth": "healthy",
+  "uid": "10001:10001",
+  "readOnlyRoot": true,
+  "credentials": "None: isolated smoke database only",
+  "url": "http://localhost:18081"
+}

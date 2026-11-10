@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-11-10T20:33:27.928556+00:00",
+  "command": "Fresh source-only snapshot: npm ci; npm run build; backend/mvnw -q verify",
+  "suites": [
+    {
+      "name": "com.cutledger.rights.RightsEngineTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.interpretation.InterpretationValidatorTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.interpretation.GeminiHttpTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.workspace.WorkspaceIntegrationTest",
+      "tests": "30",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.payment.PayPalHttpTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.bootstrap.ConfigurationTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cutledger.payment.PayPalContractTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "total": 69,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "livePaymentEvidence": "OMITTED; payment-provider tests use synthetic fault fixtures"
+}
