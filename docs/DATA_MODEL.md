@@ -65,3 +65,7 @@ erDiagram
 ## Migration and seeding
 
 Flyway owns schema and immutable shared merchant/catalog/policy seeds. A transactional session service creates isolated campaign/revision/initial-grant rows per workspace using fixed catalog IDs and newly generated workspace-specific IDs. Seed operations are idempotent and separately labeled from financial fulfillment. Never seed fabricated provider IDs or successful payment rows. Tests use actual PostgreSQL via Testcontainers; SQLite/H2 are not a substitute for locking/JSONB/constraint tests.
+
+## Implemented interpretation recovery controls
+
+V4 adds baseUsageHash/workspacecacheKey/resultmetadata/sanitizedfailurecode and separate transient/repair counters. V5 protects interpretation ownership/base/briefhash/reference/model/prompt/schema/cachecontext from mutation. V6 stores a singleton `model_dispatch_gate.next_dispatch_at`; workers reserve a database-backed five-second slot before counting/dispatching an actual request, so burst pacing survives restart/concurrent workers. Completed interpretation context/results remain tied to the accepted revision; no payment key or entitlement is derived from model output. Exclusions and issue resolutions live in immutable revision confirmation evidence and are exposed from that accepted revision in quote/receipt/history views without changing historical quote hashes.

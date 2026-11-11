@@ -89,7 +89,7 @@ class SetupTest(unittest.TestCase):
             const page=await browser.newPage(); let origin;
             page.on('request',request=>{if(request.method()==='POST')origin=request.headers()['origin']});
             await page.goto(process.argv[2]);
-            await page.getByLabel('Gemini API key (gemini-3.6-flash access)').fill('synthetic-browser-key');
+            await page.getByLabel('Gemini API key (gemini-3.5-flash-lite access)').fill('synthetic-browser-key');
             const [response]=await Promise.all([page.waitForNavigation(),page.getByRole('button',{name:'Save credentials locally'}).click()]);
             console.log(JSON.stringify({origin,status:response.status()}));
           } finally {await browser.close()}

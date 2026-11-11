@@ -86,6 +86,8 @@ public final class InterpretationValidator {
         spans("DATES",date.path("evidence"),brief,evidence,issues);
         if(dateEdited&&date.path("evidence").isEmpty())throw new InvalidOutput("MISSING_DATE_EVIDENCE");
         provenance.put("DATES",dateEdited?date.path("certainty").asText():"INHERITED");
+        provenance.put("START_DATE",date.path("startDate").isNull()?"INHERITED":date.path("certainty").asText());
+        provenance.put("END_DATE",!date.path("endDateExclusive").isNull()?date.path("certainty").asText():!date.path("durationDays").isNull()||!date.path("durationMonths").isNull()?"CALCULATED":"INHERITED");
         if(dateEdited&&!date.path("certainty").asText().equals("EXPLICIT"))issue(issues,"DATES","AMBIGUOUS","Review the proposed dates explicitly.");
         LocalDate start=date.path("startDate").isNull()?base.startDate():iso(date.path("startDate").asText());
         LocalDate end=date.path("endDateExclusive").isNull()?null:iso(date.path("endDateExclusive").asText());

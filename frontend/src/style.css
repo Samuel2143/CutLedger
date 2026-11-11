@@ -7,3 +7,7 @@ select{display:block;width:100%;font:inherit;padding:10px;border:1px solid #ccd3
 @media(max-width:767px){.comparison-grid{display:none}.comparison-cards{display:block}.comparison-toolbar{align-items:stretch;flex-direction:column;gap:12px}.comparison-toolbar .checkbox{padding:0}.scope-changes p{font-size:12px}.scope-changes>div>span{font-size:10px}.scope-changes>div{margin:10px 0}.comparison-help{font-size:11px}}
 
 .interpretation-result{border-top:1px solid #dde2eb;margin-top:24px;padding-top:24px}.interpretation-result blockquote{margin:16px 0;padding:16px;border-left:3px solid #635bdb;background:#f6f4ff;white-space:pre-wrap;overflow-wrap:anywhere}.evidence-list{display:grid;gap:10px;margin:20px 0}.evidence-list dt{font-size:11px;font-weight:700;letter-spacing:.06em;color:#59527e}.evidence-list dd{margin:4px 0;overflow-wrap:anywhere}.provenance{display:block;margin-top:5px}.interpretation textarea{width:100%}.interpretation-result .form-grid{margin:20px 0}
+
+.interpretation label.checkbox{display:flex;gap:10px;align-items:flex-start;font-size:12px;font-weight:500;margin:12px 0;line-height:1.6}.interpretation fieldset{border:1px solid #dde2eb;border-radius:8px;padding:12px 16px;margin:20px 0}.interpretation legend{font-size:12px;font-weight:600;padding:0 5px}
+
+.interpretation-result .error{display:block;overflow-wrap:anywhere}.interpretation-result li{margin-block:4px}.notice{overflow-wrap:anywhere}

@@ -82,6 +82,8 @@ public class CampaignService {
     private Map<String,Object> confirmationEvidence(Session session,UUID campaign,Confirmation input){
         var fields=List.of("distributions","territories","platforms","startDate","endDateExclusive");
         if(input.interpretationId==null){
+            var latest=db.queryForList("SELECT status FROM interpretation WHERE workspace_id=? AND campaign_id=? AND base_revision_id=? ORDER BY created_at DESC LIMIT 1",session.workspaceId(),campaign,input.baseRevisionId);
+            if(!latest.isEmpty()&&Set.of("UNSUPPORTED","NEEDS_CLARIFICATION").contains(latest.get(0).get("status")))throw new Problem(422,"EXCLUSIONS_REQUIRED","A separate manual revision must resolve stored issues and acknowledge excluded requirements.");
             if(!input.origin.equals("MANUAL")||nonempty(input.resolvedIssueIds)||nonempty(input.issueResolutions)||nonempty(input.excludedRequirementsAcknowledged))throw new Problem(422,"INVALID_CONFIRMATION","Manual entry cannot claim an AI interpretation or issue resolution.");
             return Map.of("confirmed",true,"origin","MANUAL","userEditedFields",fields,"excludedRequirements",List.of());
         }
@@ -92,7 +94,7 @@ public class CampaignService {
         var excluded=new TreeSet<String>();unsupported.forEach(item->excluded.add(item.path("id").asText()));
         boolean subset=!excluded.isEmpty();
         if(subset&&(!input.origin.equals("MANUAL")||!new TreeSet<>(safe(input.excludedRequirementsAcknowledged)).equals(excluded)))throw new Problem(422,"UNSUPPORTED_REQUIREMENTS","Unsupported requirements block AI confirmation. Revise the brief or explicitly acknowledge every excluded requirement in a separate manual revision.");
-        if(!subset&&(!input.origin.equals("AI_CONFIRMED")||nonempty(input.excludedRequirementsAcknowledged)))throw new Problem(422,"INVALID_CONFIRMATION","Confirm the stored interpretation with its complete usage.");
+        if(!subset&&(!Set.of("AI_CONFIRMED","MANUAL").contains(input.origin)||nonempty(input.excludedRequirementsAcknowledged)))throw new Problem(422,"INVALID_CONFIRMATION","Confirm the stored interpretation with its complete usage.");
         var finalUsage=json.tree(json.scopeSnapshot(input.usage.scope()));var proposed=json.parse(row.get("normalized_candidate"));
         var changed=new TreeSet<String>();for(String field:fields)if(!json.hash(finalUsage.path(field)).equals(json.hash(proposed.path(field))))changed.add(field);
         if(!new TreeSet<>(safe(input.userEditedFields)).equals(changed))throw new Problem(422,"EDIT_PROVENANCE_REQUIRED","Record each field changed from the proposed usage.");
@@ -105,7 +107,7 @@ public class CampaignService {
             if(resolution==null||!resolution.path("acknowledged").asBoolean()||!resolution.path("field").asText().equals(field)||!json.hash(Map.of(fieldMap.getOrDefault(field,"value"),resolution.path("resolvedValue"))).equals(json.hash(Map.of(fieldMap.getOrDefault(field,"value"),expected))))throw new Problem(422,"UNRESOLVED_ISSUES","Each issue needs a field resolution matching the final usage.");
         }
         if(!required.equals(resolutions.keySet())||!required.equals(new TreeSet<>(safe(input.resolvedIssueIds))))throw new Problem(422,"UNRESOLVED_ISSUES","Resolve exactly the stored issues.");
-        var provenance=new LinkedHashMap<String,Object>(json.object(metadata.path("provenance")));for(String field:changed)provenance.put(field,"USER_EDITED");
+        var provenance=new LinkedHashMap<String,Object>(json.object(metadata.path("provenance")));for(String field:changed)provenance.put(Map.of("distributions","DISTRIBUTION","territories","TERRITORY","platforms","PLATFORM","startDate","START_DATE","endDateExclusive","END_DATE").get(field),"USER_EDITED");
         return Map.of("confirmed",true,"origin",input.origin,"interpretationId",input.interpretationId,"userEditedFields",changed,"provenance",provenance,"issueResolutions",safe(input.issueResolutions),"excludedRequirements",subset?unsupported:List.of(),"model",row.get("model_id"),"promptVersion",row.get("prompt_version"));
     }
     private static boolean nonempty(List<?> value){return value!=null&&!value.isEmpty();}

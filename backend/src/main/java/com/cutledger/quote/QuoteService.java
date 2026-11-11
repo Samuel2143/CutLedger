@@ -56,7 +56,9 @@ public class QuoteService {
         result.put("snapshotHash",quote.get("snapshot_hash"));
         String status=quote.get("status").toString();
         if(status.equals("OPEN")&&!clock.instant().isBefore(((Timestamp)quote.get("expires_at")).toInstant()))status="EXPIRED";
-        result.put("status",status);result.put("serverTime",clock.instant());return result;
+        result.put("status",status);result.put("serverTime",clock.instant());
+        var evidence=(com.fasterxml.jackson.databind.JsonNode)campaigns.revision(session,(UUID)quote.get("campaign_id"),(UUID)quote.get("revision_id")).get("confirmationEvidence");
+        result.put("excludedRequirements",evidence.path("excludedRequirements").isArray()?evidence.path("excludedRequirements"):json.tree(List.of()));return result;
     }
     @Transactional
     public Map<String,Object> create(Session session,UUID campaignId,UUID revisionId,String match,UUID key){

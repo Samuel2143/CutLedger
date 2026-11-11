@@ -29,7 +29,7 @@ services:
       PAYPAL_MERCHANT_ID: ${PAYPAL_MERCHANT_ID:-}
       PAYPAL_WEBHOOK_ID: ${PAYPAL_WEBHOOK_ID:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      AI_MODEL: gemini-3.6-flash
+      AI_MODEL: gemini-3.5-flash-lite
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

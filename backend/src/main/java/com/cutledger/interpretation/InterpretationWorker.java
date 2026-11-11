@@ -26,8 +26,12 @@ public class InterpretationWorker {
                 ORDER BY i.run_after,i.id FOR UPDATE OF i SKIP LOCKED LIMIT 1
                 """,now(),now(),now());
             if(rows.isEmpty())return null;var row=rows.get(0);UUID id=(UUID)row.get("id");
+            if(!row.get("model_id").equals(config.aiModel())||!row.get("prompt_version").equals(GeminiHttp.PROMPT_VERSION)){failUnleased(id,"AI_MODEL_VERSION_CHANGED");return null;}
             if(!row.get("base_revision_id").equals(row.get("latest_revision_id"))||row.get("active_payment_id")!=null){failUnleased(id,"AI_CONTEXT_CHANGED");return null;}
             if(((Number)row.get("attempts")).intValue()>=3){failUnleased(id,"AI_ATTEMPT_LIMIT");return null;}
+            // Reserve a durable global slot: <=12/minute, below the observed15RPM free quota.
+            int slot=db.update("UPDATE model_dispatch_gate SET next_dispatch_at=? WHERE singleton=true AND next_dispatch_at<=?",Timestamp.from(clock.instant().plusSeconds(5)),now());
+            if(slot==0)return null;
             // Count every dispatch, including repair/retry/recovery, before making an external call.
             if(!sessions.takeQuota("GLOBAL","AI_CALL",config.aiDailyRequestLimit(),Duration.ofDays(1))||!sessions.takeQuota(row.get("workspace_id").toString(),"AI_CALL",60,Duration.ofDays(1))){failUnleased(id,"AI_QUOTA");return null;}
             db.update("UPDATE interpretation SET status='RUNNING',attempts=attempts+1,lease_owner=?,lease_until=? WHERE id=?",owner,Timestamp.from(clock.instant().plusSeconds(45)),id);return row;
@@ -38,7 +42,7 @@ public class InterpretationWorker {
             if(!json.hash(base).equals(job.get("base_usage_hash"))||!json.hashText(job.get("brief_text").toString()).equals(job.get("brief_hash")))throw new InterpretationValidator.InvalidOutput("CONTEXT_HASH_MISMATCH");
             var context=Map.<String,Object>of("schemaVersion",1,"promptVersion",job.get("prompt_version"),"brief",job.get("brief_text"),"briefHash",job.get("brief_hash"),"baseUsage",base,"campaignAnchorDate",job.get("anchor_date").toString(),"referenceDate",job.get("reference_date").toString(),"usageTimezone",job.get("usage_timezone"),"supportedDimensions",Map.of("distributions",List.of("ORGANIC","PAID_ADS"),"platforms",List.of("INSTAGRAM","YOUTUBE","WEBSITE"),"territories","ISO countries or WORLDWIDE"));
             String repair=((Number)job.get("repair_attempts")).intValue()>0?Objects.toString(job.get("failure_code"),"SCHEMA_INVALID"):null;
-            var response=provider.extract(new InterpretationProvider.ExtractionInput(context,repair));var edits=validator.parse(response.text());
+            var response=provider.extract(new InterpretationProvider.ExtractionInput(context,repair));if(!response.model().equals(job.get("model_id")))throw new InterpretationProvider.Failure("AI_MODEL_MISMATCH",false,1);var edits=validator.parse(response.text());
             var result=validator.validate(job.get("brief_text").toString(),json.scope(base),((java.sql.Date)job.get("anchor_date")).toLocalDate(),edits);
             var metadata=new LinkedHashMap<String,Object>(json.object(result));metadata.put("usage",response.usage());metadata.put("model",response.model());metadata.put("latencyMs",response.latencyMs());
             db.update("""

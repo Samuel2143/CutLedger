@@ -7,6 +7,9 @@ from localenv import ROOT, read
 
 paths = subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=ROOT).decode().split('\0')
 secrets = [value for key,value in read().items() if value and len(value)>=16 and any(word in key for word in ('SECRET','API_KEY','PEPPER','PASSWORD','CODE_HASH'))]
+for name in ('judge-access.txt','session-pepper.txt','judge-access.bcrypt'):
+    private = ROOT/'.local/render'/name
+    if private.exists() and len(private.read_text())>=16:secrets.append(private.read_text())
 signatures = [re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),re.compile(rb'AIza[0-9A-Za-z_-]{35}')]
 failures=[]
 for file in [ROOT/p for p in paths if p]+list((ROOT/'frontend/dist').rglob('*')):

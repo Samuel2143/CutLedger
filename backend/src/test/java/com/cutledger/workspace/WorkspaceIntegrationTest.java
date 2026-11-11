@@ -79,7 +79,7 @@ class WorkspaceIntegrationTest {
     final AtomicBoolean loseCaptureResponse=new AtomicBoolean();
     final AtomicInteger captureCalls=new AtomicInteger();
     @BeforeEach void providerFixture(){
-        clock.time.set(Instant.now());loseCaptureResponse.set(false);captureCalls.set(0);
+        clock.time.set(Instant.now());db.update("UPDATE model_dispatch_gate SET next_dispatch_at=?",java.sql.Timestamp.from(clock.instant()));loseCaptureResponse.set(false);captureCalls.set(0);
         db.update("UPDATE payment_job SET done_at=now() WHERE done_at IS NULL");
         db.update("UPDATE interpretation SET completed_at=now(),status='FAILED' WHERE completed_at IS NULL");
         when(provider.createOrder(any(),anyString())).thenAnswer(call->{
@@ -127,9 +127,9 @@ class WorkspaceIntegrationTest {
     UUID interpretation(SessionService.Session session,String brief){UUID base=db.queryForObject("SELECT latest_revision_id FROM campaign WHERE id=?",UUID.class,session.campaignId());return (UUID)interpretations.create(session,session.campaignId(),UUID.randomUUID(),new InterpretationService.Input(brief,base)).get("id");}
     @Test void realShapedInterpretationIsDurableDeduplicatedOwnedAndRequiresConfirmation() throws Exception {
         var session=create().session();String brief="Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.";
-        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.6-flash","synthetic-reference-hash",20,json.createObjectNode()));
+        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.5-flash-lite","synthetic-reference-hash",20,json.createObjectNode()));
         UUID id=interpretation(session,brief);assertThat(interpretation(session,brief)).isEqualTo(id);assertThat(aiWorker.drainOne()).isTrue();
-        var view=interpretations.view(session,id);assertThat(view.get("status")).isEqualTo("READY");verify(ai,times(1)).extract(any());assertThat(interpretation(session,brief)).isEqualTo(id);
+        var view=interpretations.view(session,id);assertThat(sessions.campaign(session,session.campaignId()).get("latestInterpretationId")).isEqualTo(id);assertThat(view.get("status")).isEqualTo("READY");verify(ai,times(1)).extract(any());assertThat(interpretation(session,brief)).isEqualTo(id);
         assertThatThrownBy(()->interpretations.view(create().session(),id)).isInstanceOf(com.cutledger.web.Problem.class);
         assertThat(db.queryForObject("SELECT version FROM campaign WHERE id=?",Long.class,session.campaignId())).isEqualTo(1);
         UUID base=(UUID)view.get("baseRevisionId");var use=new CampaignService.Usage(1,Set.of("PAID_ADS"),Set.of("US","GB"),Set.of("INSTAGRAM"),LocalDate.of(2026,11,15),LocalDate.of(2027,2,13));
@@ -137,7 +137,7 @@ class WorkspaceIntegrationTest {
         assertThat(revision.get("origin")).isEqualTo("AI_CONFIRMED");assertThat(campaigns.assessment(session,session.campaignId(),(UUID)revision.get("id")).get("totalDeltaMinor")).isEqualTo(2000L);
     }
     @Test void malformedOutputRepairAndTransientRetryHaveThreeCallTotalBoundAndSurviveLeaseRecovery() throws Exception {
-        var session=create().session();when(ai.extract(any())).thenThrow(new InterpretationProvider.Failure("AI_HTTP_503",true,1)).thenReturn(new InterpretationProvider.ExtractionResult("{bad","gemini-3.6-flash","hash",1,json.createObjectNode())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.6-flash","hash",1,json.createObjectNode()));
+        var session=create().session();when(ai.extract(any())).thenThrow(new InterpretationProvider.Failure("AI_HTTP_503",true,1)).thenReturn(new InterpretationProvider.ExtractionResult("{bad","gemini-3.5-flash-lite","hash",1,json.createObjectNode())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.5-flash-lite","hash",1,json.createObjectNode()));
         UUID id=interpretation(session,"Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.");
         aiWorker.drainOne();clock.advance(Duration.ofSeconds(65));aiWorker.drainOne();clock.advance(Duration.ofSeconds(65));aiWorker.drainOne();
         assertThat(interpretations.view(session,id).get("status")).isEqualTo("READY");verify(ai,times(3)).extract(any());
@@ -145,17 +145,23 @@ class WorkspaceIntegrationTest {
         var other=create().session();UUID stranded=interpretation(other,"No changes.");db.update("UPDATE interpretation SET status='RUNNING',attempts=3,lease_owner='crashed',lease_until=? WHERE id=?",java.sql.Timestamp.from(clock.instant().minusSeconds(1)),stranded);aiWorker.drainOne();assertThat(interpretations.view(other,stranded).get("failureCode")).isEqualTo("AI_ATTEMPT_LIMIT");verify(ai,times(3)).extract(any());
     }
     @Test void unsupportedAndUnresolvedModelRequirementsCannotBeBypassedByEmptyClientLists() throws Exception {
-        var session=create().session();var output=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(livePublicOutput());output.putArray("unsupportedRequests").addObject().put("requirement","Television").putArray("evidence").add("TV ads");
-        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(output.toString(),"gemini-3.6-flash","hash",1,json.createObjectNode()));
+        var browser=create();var session=browser.session();var output=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(livePublicOutput());output.putArray("unsupportedRequests").addObject().put("requirement","Television").putArray("evidence").add("TV ads");
+        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(output.toString(),"gemini-3.5-flash-lite","hash",1,json.createObjectNode()));
         String brief="Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days. Also TV ads";UUID id=interpretation(session,brief);aiWorker.drainOne();var view=interpretations.view(session,id);assertThat(view.get("status")).isEqualTo("UNSUPPORTED");
         var use=new CampaignService.Usage(1,Set.of("PAID_ADS"),Set.of("US","GB"),Set.of("INSTAGRAM"),LocalDate.of(2026,11,15),LocalDate.of(2027,2,13));
         assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(id,(UUID)view.get("baseRevisionId"),"AI_CONFIRMED",use,true,List.of(),List.of(),List.of(),List.of()))).hasMessageContaining("Unsupported");
         assertThat(db.queryForObject("SELECT count(*) FROM quote WHERE campaign_id=?",Integer.class,session.campaignId())).isZero();
+        assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(null,(UUID)view.get("baseRevisionId"),"MANUAL",use,true,List.of(),List.of(),List.of(),List.of()))).hasMessageContaining("manual revision");
+        String exclusion=((JsonNode)view.get("result")).path("unsupportedRequests").get(0).path("id").asText();
+        var manual=campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(id,(UUID)view.get("baseRevisionId"),"MANUAL",use,true,List.of(),List.of(),List.of(exclusion),List.of()));
+        assertThat(((JsonNode)manual.get("confirmationEvidence")).path("excludedRequirements").size()).isEqualTo(1);assertThat(manual.get("origin")).isEqualTo("MANUAL");
+        var quote=quotes.create(session,session.campaignId(),(UUID)manual.get("id"),"\"2\"",UUID.randomUUID());UUID payment=(UUID)payments.initialize(session,(UUID)quote.get("id"),quote.get("snapshotHash").toString(),"\"2\"",UUID.randomUUID()).get("paymentId");worker.drainOne();settle(new Checkout(browser,quote,payment));
+        assertThat(((JsonNode)payments.receipt(session,payment).get("excludedRequirements")).size()).isEqualTo(1);
     }
     @Test void storedIssueNeedsActualMatchingFieldResolutionAndCorrectionProvenance() throws Exception {
         var session=create().session();var output=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(livePublicOutput());
         output.putArray("issues").addObject().put("field","TERRITORY").put("kind","AMBIGUOUS").put("message","Confirm countries").putArray("evidence").add("US and UK");
-        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(output.toString(),"gemini-3.6-flash","hash",1,json.createObjectNode()));
+        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(output.toString(),"gemini-3.5-flash-lite","hash",1,json.createObjectNode()));
         UUID id=interpretation(session,"Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.");aiWorker.drainOne();var view=interpretations.view(session,id);
         var usage=new CampaignService.Usage(1,Set.of("PAID_ADS"),Set.of("US","GB"),Set.of("INSTAGRAM"),LocalDate.of(2026,11,15),LocalDate.of(2027,2,13));UUID base=(UUID)view.get("baseRevisionId");
         assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(id,base,"AI_CONFIRMED",usage,true,List.of("issue-0"),List.of(),List.of(),List.of()))).hasMessageContaining("resolution");
@@ -173,6 +179,13 @@ class WorkspaceIntegrationTest {
         assertThatThrownBy(()->interpretations.create(session,session.campaignId(),UUID.randomUUID(),new InterpretationService.Input("New unique brief",base))).hasMessageContaining("limit reached");
         var checkout=checkout();UUID lockedBase=db.queryForObject("SELECT latest_revision_id FROM campaign WHERE id=?",UUID.class,checkout.browser.session().campaignId());
         assertThatThrownBy(()->interpretations.create(checkout.browser.session(),checkout.browser.session().campaignId(),UUID.randomUUID(),new InterpretationService.Input("No changes",lockedBase))).hasMessageContaining("existing checkout");
+    }
+    @Test void durableModelPacingPreventsBurstDispatchAcrossWorkspaces() throws Exception {
+        when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.5-flash-lite","hash",1,json.createObjectNode()));
+        String brief="Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.";
+        interpretation(create().session(),brief);interpretation(create().session(),brief);
+        assertThat(aiWorker.drainOne()).isTrue();assertThat(aiWorker.drainOne()).isFalse();verify(ai,times(1)).extract(any());
+        assertThat(db.queryForObject("SELECT next_dispatch_at>? FROM model_dispatch_gate",Boolean.class,java.sql.Timestamp.from(clock.instant()))).isTrue();clock.advance(Duration.ofSeconds(6));assertThat(aiWorker.drainOne()).isTrue();verify(ai,times(2)).extract(any());
     }
     @Test void actualPostgresQuoteSnapshotAndAtomicFulfillmentPreserveHistoryAndCredit() {
         var checkout=checkout();assertThat(((Number)checkout.quote.get("totalMinor")).longValue()).isEqualTo(2000);

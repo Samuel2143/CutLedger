@@ -92,7 +92,7 @@ AG Grid renderers display reason badges, before/after scope, delta, and clause l
 | `PAYPAL_MERCHANT_ID` | backend | Expected seller merchant identity for verification |
 | `PAYPAL_WEBHOOK_ID` | hosted / tunnel | This app's registered webhook ID |
 | `GEMINI_API_KEY` | backend | Hosted extraction credential |
-| `AI_MODEL` | backend | `gemini-3.6-flash`, after access probe |
+| `AI_MODEL` | backend | `gemini-3.5-flash-lite`, after access probe |
 | `DEMO_ACCESS_CODE_HASH` | hosted | Password hash for a judge gate; raw code delivered privately |
 | `SESSION_PEPPER` | backend | Random persistent secret for hashing session tokens |
 | `AI_DAILY_REQUEST_LIMIT` | backend | Start at 200; persisted usage counter, adjustable after budget approval |

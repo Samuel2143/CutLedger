@@ -1,3 +1,3 @@
 # Public source boundary
 
-This repository starts with a reviewed source snapshot. By owner instruction, it omits all live payment evidence and private implementation Git history. Test fixtures are synthetic, except explicitly identified public synthetic-brief Gemini responses. Runtime payment verification remains real PayPal Sandbox; there is no simulated payment adapter in the application.
+This repository begins with a reviewed source snapshot. By owner instruction it omits all live payment evidence and private implementation Git history. Payment-provider fixtures are synthetic; runtime payment verification uses the real Sandbox API. Public Gemini fixtures use only the documented synthetic example brief.

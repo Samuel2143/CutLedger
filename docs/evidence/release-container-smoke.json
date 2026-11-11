@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-11-11T05:06:36.803514+00:00",
+  "readiness": "UP",
+  "containerState": "running",
+  "dockerHealth": "healthy",
+  "uid": "10001:10001",
+  "readOnlyRoot": true,
+  "imageId": "sha256:ad5ed0bab8482d952a6bf4182115ce8dce3e4240c87b21732bc76f016c857318",
+  "realCredentials": "NOT_INCLUDED; isolated smoke DB only",
+  "url": "http://localhost:18082"
+}

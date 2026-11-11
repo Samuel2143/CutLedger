@@ -1,6 +1,6 @@
 {
-  "observedAt": "2026-11-10T20:33:27.928556+00:00",
-  "command": "Fresh source-only snapshot: npm ci; npm run build; backend/mvnw -q verify",
+  "observedAt": "2026-11-11 10:38 IST",
+  "command": "backend/mvnw -q verify (phase5-paced-release-tests.log)",
   "suites": [
     {
       "name": "com.cutledger.rights.RightsEngineTest",
@@ -11,7 +11,7 @@
     },
     {
       "name": "com.cutledger.interpretation.InterpretationValidatorTest",
-      "tests": "13",
+      "tests": "14",
       "failures": "0",
       "errors": "0",
       "skipped": "0"
@@ -25,7 +25,7 @@
     },
     {
       "name": "com.cutledger.workspace.WorkspaceIntegrationTest",
-      "tests": "30",
+      "tests": "31",
       "failures": "0",
       "errors": "0",
       "skipped": "0"
@@ -39,7 +39,7 @@
     },
     {
       "name": "com.cutledger.bootstrap.ConfigurationTest",
-      "tests": "2",
+      "tests": "4",
       "failures": "0",
       "errors": "0",
       "skipped": "0"
@@ -52,9 +52,9 @@
       "skipped": "0"
     }
   ],
-  "total": 69,
+  "total": 73,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
-  "livePaymentEvidence": "OMITTED; payment-provider tests use synthetic fault fixtures"
+  "paymentTests": "Synthetic provider faults on actual PostgreSQL; live financial evidence stays private"
 }

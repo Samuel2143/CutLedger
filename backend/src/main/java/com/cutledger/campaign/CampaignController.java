@@ -35,9 +35,9 @@ public class CampaignController {
         return db.queryForList("""
             SELECT e.id,e.asset_id AS "assetId",a.name AS "assetName",e.tier_code AS "tierCode",e.scope_snapshot::text AS "scopeSnapshot",
             e.credited_minor AS "creditedMinor",e.paid_delta_minor AS "paidDeltaMinor",e.source,e.source_payment_id AS "sourcePaymentId",
-            e.accepted_revision_id AS "acceptedRevisionId",e.policy_version_id AS "policyVersionId",e.created_at AS "createdAt",s.status
-            FROM entitlement e JOIN asset a ON a.id=e.asset_id JOIN entitlement_state s ON s.entitlement_id=e.id WHERE e.campaign_id=? ORDER BY e.created_at,a.slug
-            """,id).stream().map(row->{row.put("scopeSnapshot",json.parse(row.get("scopeSnapshot")));return row;}).toList();
+            e.accepted_revision_id AS "acceptedRevisionId",COALESCE(r.confirmation_evidence->'excludedRequirements','[]'::jsonb)::text AS "excludedRequirements",e.policy_version_id AS "policyVersionId",e.created_at AS "createdAt",s.status
+            FROM entitlement e JOIN asset a ON a.id=e.asset_id JOIN entitlement_state s ON s.entitlement_id=e.id JOIN campaign_revision r ON r.id=e.accepted_revision_id WHERE e.campaign_id=? ORDER BY e.created_at,a.slug
+            """,id).stream().map(row->{row.put("scopeSnapshot",json.parse(row.get("scopeSnapshot")));row.put("excludedRequirements",json.parse(row.get("excludedRequirements")));return row;}).toList();
     }
     @GetMapping("/campaigns/{id}/activity") Object activity(@PathVariable UUID id,@RequestAttribute("workspaceSession") Session session){campaigns.ownedCampaign(session,id,false);return db.queryForList("SELECT id,event_type AS \"eventType\",safe_details::text AS details,created_at AS \"createdAt\" FROM audit_event WHERE campaign_id=? ORDER BY created_at DESC LIMIT 50",id);}
 }

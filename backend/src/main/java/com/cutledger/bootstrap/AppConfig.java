@@ -14,7 +14,7 @@ public record AppConfig(
     @Pattern(regexp="sandbox") String paypalEnv,
     String paypalClientId, String paypalClientSecret, String paypalMerchantId, String paypalWebhookId,
     String geminiApiKey,
-    @Pattern(regexp="gemini-3\\.6-flash") String aiModel,
+    @Pattern(regexp="gemini-3\\.5-flash-lite") String aiModel,
     @Min(1) @Max(10000) int aiDailyRequestLimit
 ) {
     public AppConfig {

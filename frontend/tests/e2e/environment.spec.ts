@@ -22,6 +22,7 @@ test('manual revision, exact server quote, evidence and responsive refresh recov
   expect(page.url()).toBe(campaign);
   await page.getByText('Enter usage manually',{exact:true}).click();
   await page.getByRole('button',{name:'Example: paid US + UK, 90 days',exact:true}).click();
+  for(const control of await page.locator('.manual-usage').getByRole('checkbox',{name:/^(Exclude from this permission:|Resolve )/}).all())await control.check();
   await page.getByRole('checkbox',{name:/I confirm this exact usage/}).check();
   await page.getByRole('button',{name:'Confirm manual revision',exact:true}).click();
   await expect(page.locator('.comparison>p.muted')).toHaveText('2 upgrades · 1 already covered');
@@ -92,4 +93,16 @@ test('missing owned checkout shows a recoverable error instead of indefinite loa
   await expect(page.getByText('Loading the existing checkout…',{exact:true})).toHaveCount(0);
   await page.getByRole('link',{name:'← Return to campaign',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Northstar Launch',exact:true})).toBeVisible();
+});
+
+
+test('draft survives cancelled Back navigation and policy dialog returns keyboard focus',async({page})=>{
+  await openCampaign(page);const campaign=page.url();const diagnostics=await(await page.request.get('/api/v1/diagnostics')).json();
+  if(diagnostics.aiAvailable){
+    await page.getByLabel('Client brief',{exact:true}).fill('A draft that has not been interpreted.');
+    page.once('dialog',dialog=>dialog.dismiss());await page.goBack();
+    await expect(page).toHaveURL(campaign);await expect(page.getByLabel('Client brief',{exact:true})).toHaveValue('A draft that has not been interpreted.');
+    page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Permissions',exact:true}).click();await page.getByRole('button',{name:'Workspace',exact:true}).click();
+  }
+  const evidence=page.getByRole('button',{name:'Policy evidence for Harbor Lines',exact:true});await evidence.focus();await page.keyboard.press('Enter');await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).not.toBeVisible();await expect(evidence).toBeFocused();
 });

@@ -26,6 +26,22 @@ Adopt **gemini-3.6-flash** through POST `/v1beta/models/gemini-3.6-flash:generat
 
 Workspace submissions:20/hour; actual model dispatches:60/workspace/day and configured global200/day, all durable. Each interpretation permits3dispatches total including leased restart recovery, at most1transient retry and1schema repair. Honor numeric Retry-After/GoogleRetryInfo up to24h without blocking request threads; display the retry date. Recovered work whose base revision changed or campaign entered checkout is failed before another model call. Expired workspaces are never processed. Private input is never shared across workspace caches.
 
+## ADR — 11 November 2026: sufficient free structured-extraction quota
+
+The owner confirmed the configured Gemini project. Its AIStudio RateLimit dashboard displays Free tier:3.6Flash5RPM/250KTPM/20RPD, versus3.5Flash-Lite15RPM/250KTPM/500RPD. Billing is not set up. The first40sample3.6evaluation could not pass availability within20RPD and the runtime received429with roughlyonehour RetryInfo; retain those failures and honor existing retry dates.
+
+The documented stable `gemini-3.5-flash-lite` supports structured output/thinking and free-tier simple extraction. Its separate permitted per-model quota is sufficient; no new key, project, billing or quota bypass is introduced. One real same-envelope public probe returned200/STOP in2,183ms,404reportedtokens. The complete canonical Java validator passes literal quotes, inherited platform/start and exact90day US+GB paid scope. Explicitly adopt3.5Flash-Lite through the already verified GenerateContent envelope. Full40sample evaluation and UI gates remain mandatory. No silent simulation or weakening of validation. Fail queued jobs whose immutable model/prompt differs from current runtime before dispatch.
+
+Sources: https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite and https://ai.google.dev/gemini-api/docs/pricing . Primary quota evidence is the authenticated owner-confirmed project UI; no project identifier or account details are included in the public observation.
+
+### Evaluation gate matches AI_SPEC
+
+The evaluator initially added an unstated zero-provider-error assertion. Align the final gate to the agreed≥90%exact explicit extraction and100%unsafe checkout blocking across all40planned samples. Failed provider samples count as failed explicit extraction, never as semantic interpretation success; report provider errors/availability separately. Fail-closed provider errors cannot hide behind the safety numerator: semantic recognition, issues/unsupported recall, schema/evidence validity and denominators are reported too. Preserve earlier reports and genuine failures. The browser main/ambiguous/unsupported journey must separately pass.
+
+### Final release cost and publication controls
+
+Runtime model dispatch reserves a durable5second slot (<=12RPM below observed15RPM) inV6, plus prior daily/workspace quotas. Owner chose publicsource with ALL live payment evidence omitted after a full-history push was rejected; publish only the sanitized independent source snapshot. Generated hosting judgecode/hash/pepper join configured-secret scans. No Render resources are purchased until the concrete account-displayed$32.50/month proposal is approved.
+
 ## Public source boundary
 
 The owner requested all live payment evidence be omitted from publication. The public repository begins with a source snapshot and excludes private implementation Git history, live payment/account diagnostics, operational chronology and provider identity records. No financial records are deleted from the local application.

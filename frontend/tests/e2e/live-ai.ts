@@ -14,6 +14,8 @@ test('real Gemini evidence confirmation, refresh recovery and unsafe-use blockin
   await expect(page.getByLabel('Proposed end date (exclusive)',{exact:true})).toHaveValue('2027-02-13');
   await expect(page.getByText('Inherited from confirmed usage',{exact:true}).first()).toBeVisible();
   const proposed=page.getByRole('button',{name:'Confirm usage & compare rights →',exact:true});await expect(proposed).toBeDisabled();
+  for(const [width,height]of [[1440,900],[1024,768],[390,844]]){await page.setViewportSize({width,height});await expect(page.locator(width<768?'.comparison-cards':'.comparison-grid')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:path.resolve(import.meta.dirname,`../../../docs/evidence/ai-proposal-${width}x${height}.png`),fullPage:true})}
+  await page.setViewportSize({width:1440,height:900});
   await page.getByRole('checkbox',{name:/I reviewed the original brief/}).check();await proposed.click();
   await expect(page.getByText(/AI PROPOSAL · USER CONFIRMED/)).toBeVisible();
   await expect(page.locator('.quote-total')).toHaveText('$20.00');
@@ -28,5 +30,6 @@ test('real Gemini evidence confirmation, refresh recovery and unsafe-use blockin
     else await expect(page.getByText(/CONFLICT/).first()).toBeVisible();
   }
   await page.screenshot({path:path.resolve(import.meta.dirname,'../../../docs/evidence/ai-unsupported-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:path.resolve(import.meta.dirname,'../../../docs/evidence/ai-unsupported-390x844.png'),fullPage:true});
   expect(errors).toEqual([]);
 });

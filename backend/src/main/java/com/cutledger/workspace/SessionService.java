@@ -87,7 +87,7 @@ public class SessionService {
     public Map<String,Object> campaign(Session session, UUID id) {
         if(!id.equals(session.campaignId())) throw Problem.notFound();
         var record=db.queryForMap("SELECT id,title,anchor_date,version,entitlement_version,latest_revision_id,active_payment_id FROM campaign WHERE id=? AND workspace_id=?",id,session.workspaceId());
-        var revision=db.queryForMap("SELECT id,sequence,origin,usage::text FROM campaign_revision WHERE id=?",record.get("latest_revision_id"));
+        var revision=db.queryForMap("SELECT id,sequence,origin,usage::text,confirmation_evidence::text FROM campaign_revision WHERE id=?",record.get("latest_revision_id"));
         List<Map<String,Object>> assets=db.queryForList("""
             SELECT a.id,a.slug,a.name,a.local_preview_path AS "previewPath",e.tier_code AS "heldTier",
             e.source,e.scope_snapshot::text AS scope FROM campaign_asset ca JOIN asset a ON a.id=ca.asset_id
@@ -95,10 +95,12 @@ public class SessionService {
                 WHERE e.campaign_id=ca.campaign_id AND e.asset_id=a.id ORDER BY e.credited_minor DESC,e.created_at DESC LIMIT 1) e ON true
             WHERE ca.campaign_id=? ORDER BY ca.position
             """,id);
-        try { revision.put("usage",json.readTree((String)revision.get("usage"))); }
+        try { revision.put("usage",json.readTree((String)revision.get("usage")));revision.put("confirmationEvidence",json.readTree((String)revision.remove("confirmation_evidence"))); }
         catch(Exception e) { throw new IllegalStateException("Invalid revision"); }
         var result=new LinkedHashMap<String,Object>(Map.of("id",id,"title",record.get("title"),"anchorDate",record.get("anchor_date").toString(),
             "version",record.get("version"),"entitlementVersion",record.get("entitlement_version"),"latestRevision",revision,
-            "assets",assets,"paymentLocked",record.get("active_payment_id")!=null));result.put("activePaymentId",record.get("active_payment_id"));return result;
+            "assets",assets,"paymentLocked",record.get("active_payment_id")!=null));result.put("activePaymentId",record.get("active_payment_id"));
+        var interpretations=db.queryForList("SELECT id FROM interpretation WHERE workspace_id=? AND campaign_id=? AND base_revision_id=? AND model_id=? ORDER BY created_at DESC LIMIT 1",session.workspaceId(),id,record.get("latest_revision_id"),config.aiModel());
+        result.put("latestInterpretationId",interpretations.isEmpty()?null:interpretations.get(0).get("id"));return result;
     }
 }

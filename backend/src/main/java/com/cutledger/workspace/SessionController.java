@@ -41,6 +41,6 @@ public class SessionController {
         return Map.of("environment","Sandbox","implementationPhase",0,
             "payments",config.paypalConfigured()?"CONFIGURED_NOT_VERIFIED":"NOT_CONFIGURED",
             "interpretation",config.aiConfigured()?"REAL_GEMINI_STRUCTURED_OUTPUT":"NOT_CONFIGURED",
-            "checkoutAvailable",config.paypalConfigured(),"aiAvailable",config.aiConfigured());
+            "checkoutAvailable",config.paypalConfigured(),"aiAvailable",config.aiConfigured(),"accessRequired",demo);
     }
 }

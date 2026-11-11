@@ -145,6 +145,8 @@ public class PaymentService {
         transition(p,PaymentState.SETTLED,null);unlock(p);return null;
     });}
     public Map<String,Object> receipt(Session session,UUID id){var p=owned(session,id);if(state(p)!=PaymentState.SETTLED)throw new Problem(409,"PAYMENT_NOT_SETTLED","Permissions are issued only after server verification.");
-        String capture=p.get("provider_capture_id").toString();return Map.of("payment",view(session,id),"captureReference","…"+capture.substring(Math.max(0,capture.length()-4)),"quote",quotes.view(session,(UUID)p.get("quote_id")),"grants",db.queryForList("SELECT id,asset_id AS \"assetId\",tier_code AS \"tierCode\",scope_snapshot::text AS \"scopeSnapshot\",paid_delta_minor AS \"paidDeltaMinor\",accepted_revision_id AS \"acceptedRevisionId\" FROM entitlement WHERE source_payment_id=? ORDER BY asset_id",id));
+        var acceptedQuote=quotes.view(session,(UUID)p.get("quote_id"));
+        var confirmation=(com.fasterxml.jackson.databind.JsonNode)campaigns.revision(session,(UUID)p.get("campaign_id"),(UUID)acceptedQuote.get("revisionId")).get("confirmationEvidence");
+        String capture=p.get("provider_capture_id").toString();return Map.of("excludedRequirements",confirmation.path("excludedRequirements"),"payment",view(session,id),"captureReference","…"+capture.substring(Math.max(0,capture.length()-4)),"quote",acceptedQuote,"grants",db.queryForList("SELECT id,asset_id AS \"assetId\",tier_code AS \"tierCode\",scope_snapshot::text AS \"scopeSnapshot\",paid_delta_minor AS \"paidDeltaMinor\",accepted_revision_id AS \"acceptedRevisionId\" FROM entitlement WHERE source_payment_id=? ORDER BY asset_id",id));
     }
 }

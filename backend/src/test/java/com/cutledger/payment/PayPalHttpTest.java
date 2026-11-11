@@ -32,7 +32,7 @@ class PayPalHttpTest {
             }
             byte[] bytes=response.getBytes(StandardCharsets.UTF_8);exchange.sendResponseHeaders(code,bytes.length);exchange.getResponseBody().write(bytes);exchange.close();
         });server.start();
-        var config=new AppConfig(URI.create("http://localhost:8080"),"test-pepper-with-at-least-32-characters","","sandbox","test-client","test-secret","test-merchant","","","gemini-3.6-flash",200);
+        var config=new AppConfig(URI.create("http://localhost:8080"),"test-pepper-with-at-least-32-characters","","sandbox","test-client","test-secret","test-merchant","","","gemini-3.5-flash-lite",200);
         client=new PayPalHttp(config,new ObjectMapper(),Clock.systemUTC(),URI.create("http://127.0.0.1:"+server.getAddress().getPort()),HttpClient.newHttpClient());
     }
     @AfterEach void stop(){server.stop(0);}
@@ -54,7 +54,7 @@ class PayPalHttpTest {
     }
     @Test void stalledResponseBodyHasAnEndToEndDeadline() throws Exception {
         server.createContext("/v2/checkout/orders",exchange->{mutations.incrementAndGet();exchange.sendResponseHeaders(200,0);exchange.getResponseBody().write('{');exchange.getResponseBody().flush();try{Thread.sleep(1200);}catch(InterruptedException ignored){Thread.currentThread().interrupt();}exchange.close();});
-        var config=new AppConfig(URI.create("http://localhost:8080"),"test-pepper-with-at-least-32-characters","","sandbox","test-client","test-secret","test-merchant","","","gemini-3.6-flash",200);
+        var config=new AppConfig(URI.create("http://localhost:8080"),"test-pepper-with-at-least-32-characters","","sandbox","test-client","test-secret","test-merchant","","","gemini-3.5-flash-lite",200);
         var bounded=new PayPalHttp(config,new ObjectMapper(),Clock.systemUTC(),URI.create("http://127.0.0.1:"+server.getAddress().getPort()),HttpClient.newHttpClient(),Duration.ofMillis(250));
         long start=System.nanoTime();assertThatThrownBy(()->bounded.createOrder(UUID.randomUUID(),"{}")).isInstanceOf(PayPalHttp.ProviderFailure.class);
         assertThat(Duration.ofNanos(System.nanoTime()-start)).isLessThan(Duration.ofSeconds(1));assertThat(mutations.get()).isEqualTo(1);

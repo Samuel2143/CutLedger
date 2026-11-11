@@ -2,7 +2,7 @@
 
 When the campaign changes, find and buy only the additional media rights it needs.
 
-**Implementation in progress.** The local application implements real Gemini interpretation/review, deterministic comparison, immutable quotes and genuine PayPal Sandbox orchestration. Live payment evidence is omitted at the owner’s request. AI evaluation, final hardening and hosted release remain gates.
+**Implementation in progress.** The local application implements real Gemini interpretation/review, deterministic comparison, immutable quotes and genuine PayPal Sandbox orchestration. Live payment evidence is omitted at the owner’s request. The agreedAIthresholds and localhardening gates pass; approved hostedrelease remains.
 
 ![Local rights comparison](docs/evidence/comparison-1440x900.png)
 
@@ -10,7 +10,7 @@ Northstar Launch uses three original assets: Harbor Lines and Kinetic Shapes hol
 
 ## Run locally
 
-The owner need not write code. These commands document reproducibility; Codex has already started the local application and persistent Docker database in this checkout.
+Use the commands below to start an isolated local application and persistent database.
 
 Requirements: Python 3.12+, Java 17, Node 24.22.2, and Docker with Compose. Exact distribution checksums and image digests are in [dependency evidence](docs/evidence/). The optional project-local Linux x64 toolchain installer does not modify the system installation:
 
@@ -22,8 +22,6 @@ bash scripts/start.sh
 
 Open [CutLedger locally](http://localhost:8080). Production assembly is one Spring Boot JAR serving the compiled React application and `/api/v1` from the same origin. Compose keeps PostgreSQL on a persistent named volume. Do not remove volumes to reset financial records. The app container runs as an unprivileged user with a read-only filesystem and temporary `/tmp`.
 
-Docker access is working on this computer. The current preserved database listens on `127.0.0.1:55433`, selected by private `CUTLEDGER_DB_PORT`; a fresh Compose install defaults to 55432. The original supplemental native 17.10 cluster and a private backup remain intact. Do not remove the database volume or restore over financial records to reset a demo.
-
 For local development against the running database, `python3 scripts/launch_app.py` launches the built JAR from an immutable copy after stopping only this project's app process. It does not migrate data between databases. `bash scripts/start-native.sh` remains a supplemental PostgreSQL 17 development option, not the verified container baseline.
 
 ## Private credentials
@@ -34,9 +32,9 @@ python3 scripts/configure.py
 
 Open [private local setup](http://localhost:8091). Enter a Sandbox REST business-seller app client ID, secret, seller merchant ID, and Gemini API key. Saved values are never returned to the form. Configuration is stored in owner-readable, ignored `.env.local`; source, command arguments, browser storage and public docs contain no provider secret. Keep a separate personal Sandbox buyer account ready for hosted approval. Do not put its password into the setup form or chat.
 
-The form is loopback-only, checks exact Host/Origin and an unpredictable form token, and logs no requests. It is a development utility, excluded from the runtime image. Restart the app after changing configuration. Run the explicit access probe with `python3 scripts/generate_content_probe.py --model gemini-3.6-flash`; this never creates or captures an order. Without credentials it records BLOCKED, not a simulated success.
+The form is loopback-only, checks exact Host/Origin and an unpredictable form token, and logs no requests. It is a development utility, excluded from the runtime image. Restart the app after changing configuration. Run the explicit access probe with `python3 scripts/generate_content_probe.py --model gemini-3.5-flash-lite`; this never creates or captures an order. Without credentials it records BLOCKED, not a simulated success.
 
-The adopted model is `gemini-3.6-flash` GenerateContent structured output; see DECISIONS and the public synthetic schema/evidence fixture. The first live AI evaluation failed mainly on rate limits and service errors. Live payment observations are intentionally omitted.
+The adopted model is `gemini-3.5-flash-lite` GenerateContent structured output; see DECISIONS and the public synthetic schema/evidence fixture. The adopted3.5Lite40samplebenchmark meets AI_SPEC:91.3%explicitexact,17/17unsafe blocks,10/10unsupported recall. Two provider503failedsamples and a durationclarification remain disclosed; this is a small synthetic benchmark. Live payment observations are intentionally omitted.
 
 ## Verify
 
@@ -61,7 +59,7 @@ CUTLEDGER_BROWSER_PATH=/usr/bin/brave-browser npm --prefix frontend run test:e2e
 
 The private setup form has its own isolated-store regression suite: `CUTLEDGER_BROWSER_PATH=/usr/bin/brave-browser python3 scripts/test_setup.py -v` (with the project Node toolchain active). It never submits test values to the real credential form.
 
-Elsewhere, use Playwright's installed Chromium and omit `CUTLEDGER_BROWSER_PATH`. Tests exercise the real local app/database; rare payment-provider faults use test-only HTTP fixtures. There is no runtime mock payment or hosted-model adapter. See [VERIFICATION](docs/VERIFICATION.md) for dated results, failed attempts, and outstanding checks. The CI workflow is prepared but has not run on a hosted runner.
+Elsewhere, use Playwright's installed Chromium and omit `CUTLEDGER_BROWSER_PATH`. Tests exercise the real local app/database; rare payment-provider faults use test-only HTTP fixtures. There is no runtime mock payment or hosted-model adapter. See [VERIFICATION](docs/VERIFICATION.md) for dated results, failed attempts, and outstanding checks. Hosted CI is running against the published source; see the repository Actions page for the current result.
 
 ## Architecture and correctness
 
@@ -73,8 +71,8 @@ The three SVGs are original project artwork; all prices are fictional USD amount
 
 ## Status, sponsors, and delivery
 
-[PROGRESS](docs/PROGRESS.md) is the resume point. [SPONSOR_USAGE](docs/SPONSOR_USAGE.md) distinguishes installed tooling, actual implementation contributions and unverified claims. APIMatic's context informed the actual PayPal request/header and retry boundaries used to create the real Sandbox order. AG Grid Community 36.2.0 powers the rights comparison; its server total stays unchanged when rows are filtered. AG Studio is omitted unless all mandatory gates pass first.
+[PROGRESS](docs/PROGRESS.md) is the resume point. [SPONSOR_USAGE](docs/SPONSOR_USAGE.md) distinguishes installed tooling, actual implementation contributions and unverified claims. APIMatic's context informed PayPal request/header and retry boundaries in the implemented Java adapter. AG Grid Community 36.2.0 powers the rights comparison; its server total stays unchanged when rows are filtered. AG Studio is omitted unless all mandatory gates pass first.
 
-No hosted resources have been purchased. [The prepared Render proposal](docs/HOSTING_PROPOSAL.md) is $32.50/month base for one 2 GB web service, managed Postgres and 5 GB storage, subject to authenticated account confirmation and approval. Repository publication, live demo, video and submission remain pending.
+No hosted resources have been purchased. [The prepared Render proposal](docs/HOSTING_PROPOSAL.md) is $32.50/month base for one 2 GB web service, managed Postgres and 5 GB storage, subject to authenticated account confirmation and approval. The [public MIT source](https://github.com/Samuel2143/CutLedger) is available; hosted demo, video and final submission remain pending.
 
 Local demo workspaces last seven days. The app retains financial and permission history rather than deleting it to reset a demonstration. Future private briefs are server data and must not enter operational logs or public artifacts. Hosting retention and judge access will be documented after approval and live deployment.

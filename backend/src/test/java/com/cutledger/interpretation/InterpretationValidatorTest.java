@@ -56,6 +56,15 @@ class InterpretationValidatorTest {
         assertThat(result.unsupportedRequests()).isEmpty();
         assertThat(result.evidence()).hasSize(3);
     }
+    @Test void savedRealGemini35LiteResponsePassesCanonicalSchemaAndLiteralEvidence() throws Exception {
+        var fixture=json.readTree(Files.readString(Path.of("../docs/evidence/gemini-lite-generate-content-public-fixture.json")));
+        var input=json.readTree(fixture.path("request").path("contents").get(0).path("parts").get(0).path("text").asText());
+        var result=validator.validate(input.path("brief").asText(),base,anchor,validator.parse(fixture.path("output").toString()));
+        assertThat(result.status()).isEqualTo("READY");
+        assertThat(result.normalizedCandidate()).isEqualTo(new Scope(Set.of("PAID_ADS"),Set.of("US","GB"),Set.of("INSTAGRAM"),anchor,anchor.plusDays(90)));
+        assertThat(result.unsupportedRequests()).isEmpty();assertThat(result.provenance()).containsEntry("START_DATE","INHERITED").containsEntry("END_DATE","CALCULATED");
+        assertThat(result.evidence()).hasSize(3);
+    }
     @Test void inheritanceAndAddReplaceRemoveUseTheTrustedBase(){
         assertThat(validate("No usage change.",unchanged()).normalizedCandidate()).isEqualTo(base);
         var output=unchanged();edit(output,"platformEdit","ADD",List.of("YOUTUBE"),"Also YouTube");

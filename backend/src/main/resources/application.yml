@@ -51,7 +51,7 @@ cutledger:
   paypal-merchant-id: ${PAYPAL_MERCHANT_ID:}
   paypal-webhook-id: ${PAYPAL_WEBHOOK_ID:}
   gemini-api-key: ${GEMINI_API_KEY:}
-  ai-model: ${AI_MODEL:gemini-3.6-flash}
+  ai-model: ${AI_MODEL:gemini-3.5-flash-lite}
   ai-daily-request-limit: ${AI_DAILY_REQUEST_LIMIT:200}
 logging:
   level:

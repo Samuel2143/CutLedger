@@ -22,7 +22,7 @@ fields = {
     'PAYPAL_CLIENT_ID': 'Sandbox seller app client ID',
     'PAYPAL_CLIENT_SECRET': 'Sandbox seller app client secret',
     'PAYPAL_MERCHANT_ID': 'Sandbox business seller merchant ID',
-    'GEMINI_API_KEY': 'Gemini API key (gemini-3.6-flash access)',
+    'GEMINI_API_KEY': 'Gemini API key (gemini-3.5-flash-lite access)',
     'PAYPAL_WEBHOOK_ID': 'Sandbox webhook ID (optional until hosted)',
 }
 
