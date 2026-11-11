@@ -2,7 +2,7 @@
 
 When the campaign changes, find and buy only the additional media rights it needs.
 
-**Implementation in progress.** The local application implements real Gemini interpretation/review, deterministic comparison, immutable quotes and genuine PayPal Sandbox orchestration. Live payment evidence is omitted at the owner’s request. The agreedAIthresholds and localhardening gates pass; approved hostedrelease remains.
+**Implementation in progress.** The local application implements real Gemini interpretation/review, deterministic comparison, immutable quotes and genuine PayPal Sandbox orchestration. Live payment evidence is omitted at the owner’s request. The agreed AI thresholds and local hardening gates pass. The owner selected local operation; no paid hosting is authorized.
 
 ![Local rights comparison](docs/evidence/comparison-1440x900.png)
 
@@ -17,6 +17,8 @@ Requirements: Python 3.12+, Java 17, Node 24.22.2, and Docker with Compose. Exac
 ```bash
 python3 scripts/setup_toolchain.py
 python3 scripts/configure.py --init
+python3 scripts/configure.py
+# Save real provider keys at http://localhost:8091, then stop this utility with Ctrl+C.
 bash scripts/start.sh
 ```
 
@@ -65,7 +67,7 @@ Elsewhere, use Playwright's installed Chromium and omit `CUTLEDGER_BROWSER_PATH`
 
 One Java 17 / Spring Boot 3.5.16 modular monolith, React 19.3.0 / TypeScript 6.0.3 / Vite 8.3.7 frontend, PostgreSQL 17, and no message broker. Dependencies are pinned in the Maven parent/POM, npm lockfile, toolchain checksums and Docker digests. Java coverage and pricing are deterministic; AI may propose evidence-backed edits only. Immutable revision/quote/payment snapshots, durable request IDs, reconciliation and atomic grant issuance are implemented. Their fault/concurrency tests use isolated provider fixtures; live payment evidence is intentionally omitted from this source snapshot.
 
-Session cookies are opaque, HttpOnly and SameSite=Lax (Secure under HTTPS). Only hashed tokens are stored. Mutations check exact origin and session-bound CSRF. Resource reads enforce workspace ownership, bodies are bounded, and session quotas persist in PostgreSQL. Hosted `demo` mode rejects incomplete integration/access-gate configuration. Deployment still requires the remaining security/payment gates.
+Session cookies are opaque, HttpOnly and SameSite=Lax (Secure under HTTPS). Only hashed tokens are stored. Mutations check exact origin and session-bound CSRF. Resource reads enforce workspace ownership, bodies are bounded, and session quotas persist in PostgreSQL. Hosted `demo` mode rejects incomplete integration/access-gate configuration. Hosted verification has not been run; hosting is deferred by the owner.
 
 The three SVGs are original project artwork; all prices are fictional USD amounts. Initial grants are labeled seeded prior permissions, with no fabricated historical purchases. This evaluates only CutLedger Studio's fixed merchant-defined demo policies; it is not general legal clearance. Code is [MIT](LICENSE); graphics have separate [demo asset terms and provenance](ASSET_TERMS.md).
 
@@ -73,6 +75,6 @@ The three SVGs are original project artwork; all prices are fictional USD amount
 
 [PROGRESS](docs/PROGRESS.md) is the resume point. [SPONSOR_USAGE](docs/SPONSOR_USAGE.md) distinguishes installed tooling, actual implementation contributions and unverified claims. APIMatic's context informed PayPal request/header and retry boundaries in the implemented Java adapter. AG Grid Community 36.2.0 powers the rights comparison; its server total stays unchanged when rows are filtered. AG Studio is omitted unless all mandatory gates pass first.
 
-No hosted resources have been purchased. [The prepared Render proposal](docs/HOSTING_PROPOSAL.md) is $32.50/month base for one 2 GB web service, managed Postgres and 5 GB storage, subject to authenticated account confirmation and approval. The [public MIT source](https://github.com/Samuel2143/CutLedger) is available; hosted demo, video and final submission remain pending.
+The owner chose local operation on 11 November; no hosted resources were purchased. The [local judge guide](docs/LOCAL_DEMO.md) covers setup and the expected journey. The [public MIT source](https://github.com/Samuel2143/CutLedger) is available and its release CI passed. A private 64-second local video draft demonstrates real AI, comparison, quotes and unsupported-use blocking; it contains no payment footage. Public video and final submission remain pending. The unused [Render proposal](docs/HOSTING_PROPOSAL.md) is retained only for future reference.
 
 Local demo workspaces last seven days. The app retains financial and permission history rather than deleting it to reset a demonstration. Future private briefs are server data and must not enter operational logs or public artifacts. Hosting retention and judge access will be documented after approval and live deployment.

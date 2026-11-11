@@ -2,7 +2,7 @@
 
 ## 2:50 demonstration script
 
-Record the actual deployed application using a fresh isolated demo session and a genuine sandbox buyer. Use the original three assets and exact dataset in PRODUCT_SPEC. Prefer one continuous application run. A clearly disclosed edit may omit credential entry or waiting time; do not splice an unrelated successful payment into a failed run. Never expose buyer password, API secret, access code, or full private account details.
+Record the actual running application (local by owner choice) using a fresh isolated demo session and a genuine sandbox buyer. Use the original three assets and exact dataset in PRODUCT_SPEC. Prefer one continuous application run. A clearly disclosed edit may omit credential entry or waiting time; do not splice an unrelated successful payment into a failed run. Never expose buyer password, API secret, access code, or full private account details.
 
 | Time | Screen/action | Narration |
 |---|---|---|
@@ -77,3 +77,7 @@ Target 2:50, leaving ten seconds below the limit. If provider sign-in is slow, r
 - [ ] Preserve submitted commit and evidence; later material changes require organizer permission under the rules.
 
 Create the Devpost draft and upload a video draft early when access allows. Do not spend the final buffer adding features or rewriting architecture.
+
+## Current private recording
+
+A64-second local product draft is complete: real hosted Gemini, literal evidence/review, backend$20 comparison, policy source, unaccepted quote and television blocking. English captions are recording annotations. It has no audio, payment footage or public upload. This draft does not yet satisfy the planned end-to-end payment demonstration. The prior real payment evidence remains private and must not be inserted or published without the owner’s specific authorization. No hosting purchase is needed for local recording.

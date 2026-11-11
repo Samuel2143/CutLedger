@@ -1,12 +1,16 @@
 # A/G — Deployment and external setup
 
-## Chosen topology
+## Current delivery decision
+
+On 11 November 2026 the owner chose **local operation for now**. No Render resources were provisioned and no paid approval is active. Use [LOCAL_DEMO](LOCAL_DEMO.md) for the judge-run path. The [official rules](https://paypalaihackathon.devpost.com/rules) permit complete setup/run instructions instead of a hosted demo. The following topology is a deferred plan, not a deployed service.
+
+## Deferred hosting topology
 
 One Render Docker web service serving Spring + compiled React, and one managed PostgreSQL database in the same available region. Use an always-on paid service and a database retained through at least December 21, 2026. Render free web services sleep and free PostgreSQL has a limited lifetime; a database created November 10 with a 30-day expiry could disappear during judging. [Render free limits](https://render.com/docs/free). Do not silently fall back to ephemeral disk or an expiring database.
 
 Use a multi-stage Docker build: patched Node 24 builds frontend; Maven/Java 17 builds backend including frontend static files; a small Java 17 runtime executes the jar as nonroot. Pin verified base image digests after the first build. Bind `0.0.0.0:${PORT}`; [Render web service requirements](https://render.com/docs/web-services). Serve SPA routes through a fallback only for browser routes, never `/api` or missing static assets. Build and run locally from the same container before deployment.
 
-Start with a 1 GB web service if reasonably priced; measure memory/CPU and cap JVM memory sensibly. No exact monthly price is assumed. Before creating a paid resource, Codex must prepare the resource names, region, plan sizes, exact displayed costs, retention through judging, and budget estimate, then request one approval unless already authorized. A provisional planning allowance of $50 for hosting/model usage is a suggestion, not spending permission or a guaranteed sufficient budget. Billing alerts are not assumed to be hard caps; enforce the app's AI quota too.
+The account-displayed prepared proposal uses a 2 GB web service plus 256 MB PostgreSQL and 5 GB storage at $32.50/month base; see HOSTING_PROPOSAL. It was not approved. Measure memory/CPU and cap JVM memory sensibly if hosting is reopened. Before creating a paid resource, Codex must prepare the resource names, region, plan sizes, exact displayed costs, retention through judging, and budget estimate, then request one approval unless already authorized. A provisional planning allowance of $50 for hosting/model usage is a suggestion, not spending permission or a guaranteed sufficient budget. Billing alerts are not assumed to be hard caps; enforce the app's AI quota too.
 
 ## Human setup sequence — no coding
 

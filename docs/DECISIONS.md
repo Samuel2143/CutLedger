@@ -42,6 +42,10 @@ The evaluator initially added an unstated zero-provider-error assertion. Align t
 
 Runtime model dispatch reserves a durable5second slot (<=12RPM below observed15RPM) inV6, plus prior daily/workspace quotas. Owner chose publicsource with ALL live payment evidence omitted after a full-history push was rejected; publish only the sanitized independent source snapshot. Generated hosting judgecode/hash/pepper join configured-secret scans. No Render resources are purchased until the concrete account-displayed$32.50/month proposal is approved.
 
+## ADR — 11 November 2026: owner selects local delivery
+
+After reviewing the exact $32.50/month Render proposal, the owner chose “Keep the app local for now.” Close unsubmitted forms, buy no resources, preserve the working local application/database and unused private configuration. Continue public source, local judge instructions and video/submission preparation. This changes hosting scope; it does not waive payment safety or authorize calling an unfinished video/submission complete. Official rules permit a reproducible local build as the functional-demo access path.
+
 ## Public source boundary
 
 The owner requested all live payment evidence be omitted from publication. The public repository begins with a source snapshot and excludes private implementation Git history, live payment/account diagnostics, operational chronology and provider identity records. No financial records are deleted from the local application.

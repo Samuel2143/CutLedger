@@ -1,5 +1,7 @@
 # Prepared Render configuration — no resources purchased
 
+**DEFERRED_BY_OWNER, 11 November 2026:** “Keep the app local for now.” Forms were closed without Create/Deploy. No resource was provisioned and no billing changed. This is historical planning information; do not request or infer paid approval from it.
+
 Observed 10–11 November 2026. Authenticated owner-account forms now confirm both Singapore plans and exact prices below. No resources created; final invoice and paid permission remain unverified. This proposal does not authorize provisioning.
 
 | Resource | Configuration | Official displayed monthly cost |
@@ -16,4 +18,4 @@ Retain resources from approximately November 11 through December 21, 2026, inclu
 
 The confirmed Gemini project remains on its free tier. The adopted Flash Lite model has15RPM/500RPD free quota; application dispatch is paced below12RPM and capped200/day. The real40sampleevaluation is complete without enabling Google billing. No paid Google configuration is proposed.
 
-`render.yaml` and the Dockerfile are prepared. Provisioning is blocked until the local release gates pass, account access is available, and the owner approves the exact account-displayed configuration and spending scope. No approval request is being made for an incomplete deployment candidate.
+`render.yaml` and the Dockerfile are prepared. The local release gates pass. Provisioning is deferred by the owner. Any future deployment requires the owner to reopen hosting and approve its then-current concrete configuration and spending scope.
