@@ -11,12 +11,25 @@ type Row=RightsRow & {summary?:boolean;summaryText?:string};
 const title=(value:string)=>value.replaceAll('_',' ').toLowerCase();
 function status(row:RightsRow){return row.status==='COVERED'?'Already covered':row.status==='UPGRADE_REQUIRED'?'Upgrade needed':title(row.status)}
 function scopeLines(scope:Usage|null){return scope?[scope.distributions.map(title).join(' + '),scope.territories.map(t=>({US:'United States',GB:'United Kingdom',WORLDWIDE:'Worldwide'}[t]??t)).join(' + '),scope.platforms.map(title).join(' + '),`${new Date(scope.startDate+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})} → ${new Date(scope.endDateExclusive+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})} (end exclusive)`]:['No active grant','','','']}
+function noGapMessage(row:RightsRow){
+  switch(row.status){
+    case 'COVERED':return 'Requested use fits the held permission. Broader existing rights remain yours.';
+    case 'UPGRADE_REQUIRED':return 'Additional permission is required. Review the server assessment and policy evidence.';
+    case 'UNSUPPORTED':return 'This use is outside the supported permissions. Checkout is blocked.';
+    case 'NEEDS_CLARIFICATION':return 'Coverage is uncertain. Clarify the requested use before checkout.';
+    case 'REVIEW_REQUIRED':
+      if(row.reasonCodes.includes('PAYMENT_REVIEW'))return 'Coverage requires payment review. Checkout is blocked until the payment is resolved.';
+      if(row.reasonCodes.includes('POLICY_MIGRATION_REQUIRED'))return 'Coverage requires policy review. Checkout is blocked until compatible permission is confirmed.';
+      return 'Coverage requires review. Checkout is blocked.';
+    default:return 'Coverage is not confirmed. Review the server assessment before checkout.';
+  }
+}
 function ScopeChanges({row,changedOnly}:{row:RightsRow;changedOnly:boolean}){
   const held=scopeLines(row.heldScope),requested=scopeLines(row.requestedScope);
   const labels=['Distribution','Territories','Platforms','Dates'];
   const reasons=['DISTRIBUTION_GAP','TERRITORY_GAP','PLATFORM_GAP','DATE_GAP'];
   const indices=labels.map((_,i)=>i).filter(i=>!changedOnly||row.reasonCodes.includes(reasons[i]));
-  return <div className="scope-changes">{indices.length===0?<span className="fine">Requested use fits the held permission. Broader existing rights remain yours.</span>:indices.map(i=><div key={labels[i]}><span>{labels[i]}</span><p><span className="scope-before">Held permission: {held[i]||'—'}</span><span> · Requested use: </span><strong>{requested[i]}</strong></p></div>)}</div>;
+  return <div className="scope-changes">{indices.length===0?<span className="fine">{noGapMessage(row)}</span>:indices.map(i=><div key={labels[i]}><span>{labels[i]}</span><p><span className="scope-before">Held permission: {held[i]||'—'}</span><span> · Requested use: </span><strong>{requested[i]}</strong></p></div>)}</div>;
 }
 function AssetCell({data}:ICellRendererParams<Row>){if(!data)return null;return data.summary?<div className="grid-summary"><strong>All {data.summaryText}</strong><span>Full campaign · server total</span></div>:<div className="grid-asset"><img src={data.previewPath} alt=""/><div><strong>{data.assetName}</strong><span className={`coverage ${data.status==='COVERED'?'covered':'upgrade'}`}>{status(data)}</span><span className="grid-tier">{data.heldTier??'No grant'}{data.targetTier?` → ${data.targetTier}`:''}</span></div></div>}
 

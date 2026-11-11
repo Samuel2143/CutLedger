@@ -21,12 +21,11 @@ The prices and policies belong to a fictional demonstration catalog. Prior permi
 
 ## Run locally
 
-The application runs locally; no paid hosting is required. The supported installation path is Linux x64 with Python 3.12+, Docker Engine and Docker Compose. The installer supplies the pinned Java 17.0.21+9 and Node 24.22.2 distributions. Other operating systems require equivalent toolchains and have not been verified.
+The application runs locally; no paid hosting is required. The supported installation path is Linux x64 with Python 3.12+, Docker Engine and Docker Compose. The Docker build supplies pinned Java and Node toolchains. Native development/tests additionally need Java 17.0.21+9 and Node 24.22.2; the optional installer supplies them. Other operating systems have not been verified.
 
 ```bash
 git clone https://github.com/Samuel2143/CutLedger.git
 cd CutLedger
-python3 scripts/setup_toolchain.py
 python3 scripts/configure.py --init
 python3 scripts/configure.py
 ```
@@ -52,7 +51,17 @@ docker compose -p cutledger ps
 curl --fail http://localhost:8080/actuator/health/readiness
 ```
 
-Use a separate **Personal Sandbox buyer**, eligible to pay the selected seller, for PayPal approval. Seller and buyer account-country restrictions can affect checkout. No real funds move. Judge testing access must be delivered privately; a missing credential produces a visible unavailable integration, never a simulated success.
+Use a separate **Personal Sandbox buyer**, eligible to pay the selected seller, for PayPal approval. Seller and buyer account-country restrictions can affect checkout. No real funds move. A missing credential produces a visible unavailable integration, never a simulated success.
+
+### Judge access
+
+This is a local test build, not a hosted website. Installation and dependency downloads come before the five-minute walkthrough.
+
+For hackathon judges, the access-delivery channel is the submission’s **“Testing instructions or credentials the judges need to test your project”** field in Devpost Additional info, which is restricted to judges and organizers. The private packet must contain the compatible Sandbox seller app credentials, a Gemini free-tier key, a separate eligible Personal Sandbox buyer login, exact source revision and setup steps. Credentials are not distributed through this repository, GitHub issues, the video or browser-session exports.
+
+**Private access delivery is still pending.** If the packet is absent when judging, ask the hackathon organizers to relay a private access request to the entrant through Devpost. Do not post passwords or API keys publicly. Developers may instead use their own compatible Sandbox accounts and model key.
+
+Fresh source installation with an empty database and no integration keys can verify startup, manual comparison and error handling. It cannot verify real Gemini extraction, buyer approval, capture or signed webhook delivery. Those steps need the private packet and a separately authorized end-to-end test; existing demo cookies are not a substitute.
 
 ## Walk through the demo
 
@@ -92,13 +101,14 @@ AG Grid Community provides the actual comparison workspace and policy-evidence i
 
 ## Verify
 
-With Docker available:
+With Docker available, install the optional native test toolchain and run:
 
 ```bash
+python3 scripts/setup_toolchain.py
 bash scripts/check.sh
 ```
 
-The backend uses isolated PostgreSQL/Testcontainers and synthetic HTTP fixtures for provider faults. Tests do not place payments or call the live model. The corrected release passed **74 backend tests**, including **32 PostgreSQL integration tests**, and **7 browser checks**.
+The backend uses isolated PostgreSQL/Testcontainers and synthetic HTTP fixtures for provider faults. Tests do not place payments or call the live model. The reviewed backend passed **74 tests**, including **32 PostgreSQL integration tests**. The latest local frontend passed **9 browser checks** against a clean, credential-free isolated installation.
 
 With the application running:
 

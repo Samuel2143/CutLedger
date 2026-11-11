@@ -129,3 +129,28 @@ for(const aiAvailable of [false,true])test(`blocked zero assessment and draft ne
  await openCampaign(page);await page.getByText('Enter usage manually',{exact:true}).click();await expect(page.getByRole('checkbox',{name:'Exclude from this permission: TEST-ONLY television exclusion'})).toBeVisible();await expect(page.getByRole('button',{name:'Confirm manual revision',exact:true})).toBeDisabled();
  await page.setViewportSize({width:390,height:844});await expect(page.getByRole('checkbox',{name:'Exclude from this permission: TEST-ONLY television exclusion'})).toBeVisible();
  });
+
+for(const covered of [false,true])test(`server coverage message without dimensional gaps (TEST_ONLY covered: ${covered})`,async({page})=>{
+ // Synthetic assessment only: never emulate a live capture, grant or hosted model response.
+ const reassurance='Requested use fits the held permission. Broader existing rights remain yours.';
+ const warning='Coverage requires payment review. Checkout is blocked until the payment is resolved.';
+ await page.route('**/assessment',async route=>{const response=await route.fetch();const body=await response.json();body.totalDeltaMinor=0;body.canQuote=false;body.rows=body.rows.map((row:object)=>({...row,status:covered?'COVERED':'REVIEW_REQUIRED',deltaMinor:0,reasonCodes:covered?[]:['PAYMENT_REVIEW']}));await route.fulfill({json:body});});
+ await openCampaign(page);
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:900});
+  const comparison=page.locator(width<768?'.comparison-cards':'.comparison-grid');
+  await expect(comparison.getByText(covered?reassurance:warning,{exact:true})).toHaveCount(3);
+  await expect(comparison.getByText(covered?reassurance:warning,{exact:true}).first()).toBeVisible();
+  if(!covered)await expect(page.getByText(reassurance,{exact:true})).toHaveCount(0);
+  await expect(page.locator('aside h2')).toHaveText(covered?'Rights already held.':'Permission review required.');
+  await expect(page.getByRole('button',{name:'Accept quote & continue →',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Review upgrade quote →',exact:true})).toHaveCount(0);
+  await expect(page.locator('.quote-total')).toHaveText('$0.00');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:path.resolve(import.meta.dirname,`../../../.local/final-review/TEST_ONLY-${covered?'covered':'payment-review'}-${width}.png`),fullPage:true});
+  await page.getByRole('checkbox',{name:'Only missing rights',exact:true}).uncheck();
+  await expect(comparison.getByText('Held permission:',{exact:false}).first()).toBeVisible();
+  if(!covered)await expect(page.getByText(reassurance,{exact:true})).toHaveCount(0);
+  await page.getByRole('checkbox',{name:'Only missing rights',exact:true}).check();
+ }
+});
