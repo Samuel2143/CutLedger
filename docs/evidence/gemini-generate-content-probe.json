@@ -1,9 +1,0 @@
-{
-  "observedAt": "2026-11-10T19:54:14.776167+00:00",
-  "requestedModel": "gemini-3.8-flash",
-  "api": "v1beta/models/gemini-3.8-flash:generateContent",
-  "fullValidationAndEvals": "NOT_RUN",
-  "status": "FAIL_NETWORK_OR_PARSE",
-  "errorClass": "TimeoutError",
-  "latencyMs": 20070
-}

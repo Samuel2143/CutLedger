@@ -42,6 +42,8 @@ public class InterpretationService {
         for(String name:List.of("id","status"))result.put(name,row.get(name));
         result.put("brief",row.get("brief_text"));result.put("baseRevisionId",row.get("base_revision_id"));result.put("model",row.get("model_id"));result.put("promptVersion",row.get("prompt_version"));result.put("referenceDate",row.get("reference_date").toString());
         for(var field:Map.of("proposedEdits","proposed_edits","normalizedCandidate","normalized_candidate","issues","issues","evidence","evidence","result","result_metadata").entrySet())result.put(field.getKey(),row.get(field.getValue())==null?null:json.parse(row.get(field.getValue())));
+        var safeguards=db.queryForList("SELECT id,status FROM interpretation WHERE workspace_id=? AND campaign_id=? AND base_revision_id=? AND status IN ('READY','UNSUPPORTED','NEEDS_CLARIFICATION') ORDER BY created_at DESC,id DESC LIMIT 1",session.workspaceId(),row.get("campaign_id"),row.get("base_revision_id"));
+        if(!safeguards.isEmpty()&&!id.equals(safeguards.get(0).get("id"))&&Set.of("UNSUPPORTED","NEEDS_CLARIFICATION").contains(safeguards.get(0).get("status")))result.put("manualSafeguard",view(session,(UUID)safeguards.get(0).get("id")));
         result.put("failureCode",row.get("failure_code"));result.put("retryAt",((Timestamp)row.get("run_after")).toInstant());result.put("attempts",row.get("attempts"));return result;
     }
 }

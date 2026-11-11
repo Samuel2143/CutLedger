@@ -4,7 +4,7 @@ import type {Campaign,Diagnostics,Session,Usage} from '../../api';
 const EXAMPLE="Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.";
 type Issue={id:string;field:string;kind:string;message:string};
 type Span={field:string;quote:string;start:number;end:number};
-export type Interpretation={id:string;status:string;brief:string;baseRevisionId:string;model:string;referenceDate:string;normalizedCandidate:Usage|null;issues:Issue[]|null;evidence:Span[]|null;failureCode:string|null;retryAt:string;attempts:number;result:{provenance:Record<string,string>;unsupportedRequests:Array<{id:string;requirement:string}>}|null};
+export type Interpretation={manualSafeguard?:Interpretation;id:string;status:string;brief:string;baseRevisionId:string;model:string;referenceDate:string;normalizedCandidate:Usage|null;issues:Issue[]|null;evidence:Span[]|null;failureCode:string|null;retryAt:string;attempts:number;result:{provenance:Record<string,string>;unsupportedRequests:Array<{id:string;requirement:string}>}|null};
 const fields=['distributions','territories','platforms','startDate','endDateExclusive'] as const;
 function equal(a:unknown,b:unknown){return JSON.stringify(Array.isArray(a)?[...a].sort():a)===JSON.stringify(Array.isArray(b)?[...b].sort():b)}
 export function InterpretationReview({campaign,session,diagnostics,onRefresh,onDirty,onRecord}:{campaign:Campaign;session:Session;diagnostics:Diagnostics|null;onRefresh:()=>Promise<void>;onDirty:(value:boolean)=>void;onRecord:(record:Interpretation|null)=>void}){

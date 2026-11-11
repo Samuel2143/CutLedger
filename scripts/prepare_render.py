@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare owner-only hosting secrets without displaying values or changing local sessions.
+"""Prepare private hosting secrets without displaying values or changing local sessions.
 No network calls or paid resources. Import app.env only into the approved Render service.
 """
 import argparse,json,os,secrets,subprocess

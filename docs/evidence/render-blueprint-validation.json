@@ -1,8 +1,0 @@
-{
-  "date": "2026-11-10",
-  "schemaSource": "https://render.com/schema/render.yaml.json",
-  "schemaSha256": "8a3fb8da6b4f55fe686fbefa790e011d3dd7895f013f355953c572a21ab6494a",
-  "result": "PASS_LOCAL_SCHEMA_ONLY",
-  "authenticatedValidation": "NOT_RUN",
-  "provisioning": "NOT_RUN"
-}

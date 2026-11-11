@@ -81,9 +81,10 @@ public class CampaignService {
     }
     private Map<String,Object> confirmationEvidence(Session session,UUID campaign,Confirmation input){
         var fields=List.of("distributions","territories","platforms","startDate","endDateExclusive");
+        var actionable=db.queryForList("SELECT id,status FROM interpretation WHERE workspace_id=? AND campaign_id=? AND base_revision_id=? AND status IN ('READY','UNSUPPORTED','NEEDS_CLARIFICATION') ORDER BY created_at DESC,id DESC LIMIT 1",session.workspaceId(),campaign,input.baseRevisionId);
+        if(!actionable.isEmpty()&&Set.of("UNSUPPORTED","NEEDS_CLARIFICATION").contains(actionable.get(0).get("status"))&&!Objects.equals(input.interpretationId,actionable.get(0).get("id")))
+            throw new Problem(422,"EXCLUSIONS_REQUIRED","A separate manual revision must resolve stored issues and acknowledge excluded requirements.");
         if(input.interpretationId==null){
-            var latest=db.queryForList("SELECT status FROM interpretation WHERE workspace_id=? AND campaign_id=? AND base_revision_id=? ORDER BY created_at DESC LIMIT 1",session.workspaceId(),campaign,input.baseRevisionId);
-            if(!latest.isEmpty()&&Set.of("UNSUPPORTED","NEEDS_CLARIFICATION").contains(latest.get(0).get("status")))throw new Problem(422,"EXCLUSIONS_REQUIRED","A separate manual revision must resolve stored issues and acknowledge excluded requirements.");
             if(!input.origin.equals("MANUAL")||nonempty(input.resolvedIssueIds)||nonempty(input.issueResolutions)||nonempty(input.excludedRequirementsAcknowledged))throw new Problem(422,"INVALID_CONFIRMATION","Manual entry cannot claim an AI interpretation or issue resolution.");
             return Map.of("confirmed",true,"origin","MANUAL","userEditedFields",fields,"excludedRequirements",List.of());
         }

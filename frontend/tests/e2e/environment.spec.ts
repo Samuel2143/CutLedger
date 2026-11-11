@@ -43,9 +43,9 @@ test('manual revision, exact server quote, evidence and responsive refresh recov
   await expect(grid.locator('[row-index="0"]')).toContainText('Paper Orbit');
   await grid.getByRole('columnheader',{name:'Additional',exact:true}).click();
   await expect(grid.locator('[row-index="0"]')).toContainText('Kinetic Shapes');
-  await page.getByRole('checkbox',{name:'Only changed dimensions',exact:true}).uncheck();
-  await expect(grid.getByText('Held → requested scope',{exact:true})).toBeVisible();
-  await page.getByRole('checkbox',{name:'Only changed dimensions',exact:true}).check();
+  await page.getByRole('checkbox',{name:'Only missing rights',exact:true}).uncheck();
+  await expect(grid.getByText('Held permission / requested use',{exact:true})).toBeVisible();
+  await page.getByRole('checkbox',{name:'Only missing rights',exact:true}).check();
   await page.getByRole('button',{name:'Policy evidence for Harbor Lines',exact:true}).click();
   await expect(page.getByRole('dialog')).toContainText('V1-UPGRADE-CREDIT');
   await page.getByRole('button',{name:'Close policy evidence',exact:true}).click();
@@ -106,3 +106,17 @@ test('draft survives cancelled Back navigation and policy dialog returns keyboar
   }
   const evidence=page.getByRole('button',{name:'Policy evidence for Harbor Lines',exact:true});await evidence.focus();await page.keyboard.press('Enter');await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).not.toBeVisible();await expect(evidence).toBeFocused();
 });
+
+ test('blocked zero assessment and unconfirmed draft never claim coverage',async({page})=>{
+ await openCampaign(page);
+ await page.route('**/assessment',async route=>{const response=await route.fetch();const body=await response.json();body.totalDeltaMinor=0;body.canQuote=false;body.rows=body.rows.map((r:object)=>({...r,status:'REVIEW_REQUIRED',deltaMinor:0,reasonCodes:['PAYMENT_REVIEW']}));await route.fulfill({json:body});});
+ await page.reload();await expect(page.getByRole('heading',{name:'Permission review required.'})).toBeVisible();await expect(page.getByRole('heading',{name:'Rights already held.'})).toHaveCount(0);
+ await page.getByLabel('Client brief',{exact:true}).fill('Also television');await expect(page.getByRole('heading',{name:'Draft needs review.'})).toBeVisible();await expect(page.getByText('This assessment does not cover your unconfirmed draft.',{exact:false})).toBeVisible();
+ });
+ test('manual fallback retains prior warning during a pending replacement',async({page})=>{
+ const fixtureId='00000000-0000-4000-8000-000000000001';let usage:unknown,base:string;
+ await page.route('**/api/v1/campaigns/*',async route=>{const response=await route.fetch();const body=await response.json();if(body.latestRevision){usage=body.latestRevision.usage;base=body.latestRevision.id;body.latestInterpretationId=fixtureId;}await route.fulfill({json:body});});
+ await page.route('**/api/v1/interpretations/'+fixtureId,async route=>{const warning={id:'00000000-0000-4000-8000-000000000002',status:'UNSUPPORTED',brief:'TEST-ONLY fixture: television',baseRevisionId:base,model:'TEST_ONLY',referenceDate:'2026-11-11',normalizedCandidate:usage,issues:[],evidence:[],result:{provenance:{},unsupportedRequests:[{id:'tv',requirement:'TEST-ONLY television exclusion'}]}};await route.fulfill({json:{...warning,id:fixtureId,status:'PENDING',normalizedCandidate:null,result:null,manualSafeguard:warning}});});
+ await openCampaign(page);await page.getByText('Enter usage manually',{exact:true}).click();await expect(page.getByRole('checkbox',{name:'Exclude from this permission: TEST-ONLY television exclusion'})).toBeVisible();await expect(page.getByRole('button',{name:'Confirm manual revision',exact:true})).toBeDisabled();
+ await page.setViewportSize({width:390,height:844});await expect(page.getByRole('checkbox',{name:'Exclude from this permission: TEST-ONLY television exclusion'})).toBeVisible();
+ });

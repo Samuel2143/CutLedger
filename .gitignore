@@ -12,6 +12,15 @@ test-results/
 *.pem
 *.key
 .context-plugins/
-CutLedger-Codex-Handoff.zip
+*Handoff.zip
 __pycache__/
 *.pyc
+
+# Local implementation instructions and private working documentation.
+*.md
+*.MD
+!README.md
+!ReadMe.md
+AGENTS.md
+START_HERE.md
+prompts/

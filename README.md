@@ -1,80 +1,128 @@
 # CutLedger
 
-When the campaign changes, find and buy only the additional media rights it needs.
+**When the campaign changes, buy only the additional media rights it needs.**
 
-**Implementation in progress.** The local application implements real Gemini interpretation/review, deterministic comparison, immutable quotes and genuine PayPal Sandbox orchestration. Live payment evidence is omitted at the owner’s request. The agreed AI thresholds and local hardening gates pass. The owner selected local operation; no paid hosting is authorized.
+CutLedger helps creative teams buy eligible media-rights upgrades from a participating asset studio. Gemini turns a revised brief into evidence-backed proposed edits. The user reviews those edits; deterministic merchant policies decide coverage and price. PayPal Sandbox handles the purchase, and independently verified payment controls permission issuance.
 
-![Local rights comparison](docs/evidence/comparison-1440x900.png)
+![Rights comparison](docs/evidence/comparison-1440x900.png)
 
-Northstar Launch uses three original assets: Harbor Lines and Kinetic Shapes hold seeded ORGANIC30 permissions; Paper Orbit holds GLOBAL365. Explicitly confirming paid US/UK Instagram usage for 90 days produces the server's **$8 + $12 + $0 = $20** assessment. AG Grid Community presents held/requested scope, incremental amounts, filters, sorting, a pinned server total and policy evidence; mobile uses equivalent cards. No AI result is simulated.
+## Example
+
+Northstar Launch already has permissions for three original visuals. The client changes the campaign to paid Instagram advertising in the US and UK for 90 days.
+
+| Asset | Existing permission | Additional price |
+| --- | --- | ---: |
+| Harbor Lines | ORGANIC30 | $8 |
+| Kinetic Shapes | ORGANIC30 | $12 |
+| Paper Orbit | GLOBAL365 | $0 — already covered |
+| **Total** | **$50 cumulative tier value − $30 eligible prior credit** | **$20** |
+
+The prices and policies belong to a fictional demonstration catalog. Prior permissions remain in the ledger. After the eligible upgrades are purchased, the same use needs no further purchase. Unsupported television use remains blocked.
 
 ## Run locally
 
-Use the commands below to start an isolated local application and persistent database.
-
-Requirements: Python 3.12+, Java 17, Node 24.22.2, and Docker with Compose. Exact distribution checksums and image digests are in [dependency evidence](docs/evidence/). The optional project-local Linux x64 toolchain installer does not modify the system installation:
+The application runs locally; no paid hosting is required. The supported installation path is Linux x64 with Python 3.12+, Docker Engine and Docker Compose. The installer supplies the pinned Java 17.0.21+9 and Node 24.22.2 distributions. Other operating systems require equivalent toolchains and have not been verified.
 
 ```bash
+git clone https://github.com/Samuel2143/CutLedger.git
+cd CutLedger
 python3 scripts/setup_toolchain.py
 python3 scripts/configure.py --init
 python3 scripts/configure.py
-# Save real provider keys at http://localhost:8091, then stop this utility with Ctrl+C.
+```
+
+While the last command runs, open **http://localhost:8091** and save:
+
+- A PayPal Sandbox business-seller REST app client ID and secret.
+- The matching seller merchant ID.
+- A Gemini API key with access to `gemini-3.5-flash-lite`.
+
+The setup utility stores values in ignored `.env.local` with user-only file permissions. Saved values are never returned to the browser. Its presence check confirms storage, not provider validity. Keep credentials, buyer passwords and private briefs out of Git, screenshots and logs.
+
+Stop the setup utility with Ctrl+C, then start the application:
+
+```bash
 bash scripts/start.sh
 ```
 
-Open [CutLedger locally](http://localhost:8080). Production assembly is one Spring Boot JAR serving the compiled React application and `/api/v1` from the same origin. Compose keeps PostgreSQL on a persistent named volume. Do not remove volumes to reset financial records. The app container runs as an unprivileged user with a read-only filesystem and temporary `/tmp`.
-
-For local development against the running database, `python3 scripts/launch_app.py` launches the built JAR from an immutable copy after stopping only this project's app process. It does not migrate data between databases. `bash scripts/start-native.sh` remains a supplemental PostgreSQL 17 development option, not the verified container baseline.
-
-## Private credentials
+Open **http://localhost:8080**. The first build downloads pinned dependencies and container images. The app serves React and the API from one origin, with PostgreSQL on a persistent volume. Default ports are 8080 for the app, 55432 for the fresh-install database and 8091 for temporary setup.
 
 ```bash
-python3 scripts/configure.py
+docker compose -p cutledger ps
+curl --fail http://localhost:8080/actuator/health/readiness
 ```
 
-Open [private local setup](http://localhost:8091). Enter a Sandbox REST business-seller app client ID, secret, seller merchant ID, and Gemini API key. Saved values are never returned to the form. Configuration is stored in owner-readable, ignored `.env.local`; source, command arguments, browser storage and public docs contain no provider secret. Keep a separate personal Sandbox buyer account ready for hosted approval. Do not put its password into the setup form or chat.
+Use a separate **Personal Sandbox buyer**, eligible to pay the selected seller, for PayPal approval. Seller and buyer account-country restrictions can affect checkout. No real funds move. Judge testing access must be delivered privately; a missing credential produces a visible unavailable integration, never a simulated success.
 
-The form is loopback-only, checks exact Host/Origin and an unpredictable form token, and logs no requests. It is a development utility, excluded from the runtime image. Restart the app after changing configuration. Run the explicit access probe with `python3 scripts/generate_content_probe.py --model gemini-3.5-flash-lite`; this never creates or captures an order. Without credentials it records BLOCKED, not a simulated success.
+## Walk through the demo
 
-The adopted model is `gemini-3.5-flash-lite` GenerateContent structured output; see DECISIONS and the public synthetic schema/evidence fixture. The adopted3.5Lite40samplebenchmark meets AI_SPEC:91.3%explicitexact,17/17unsafe blocks,10/10unsupported recall. Two provider503failedsamples and a durationclarification remain disclosed; this is a small synthetic benchmark. Live payment observations are intentionally omitted.
+1. Open the sample campaign in a fresh browser workspace. Initial permissions are explicitly labeled seeded permissions.
+2. Select **Use example brief**, then **Interpret revision**. Review the literal evidence for paid advertising, US/UK and 90 days, along with inherited fields.
+3. Confirm the intended usage. Compare held permissions with requested use, filter the AG Grid comparison and inspect policy evidence. Filtering does not change the server total.
+4. Review the **$20** quote and eligible prior credit. Accepting the ten-minute quote prepares a real Sandbox order.
+5. Approve with the separate Personal Sandbox buyer, return to CutLedger and explicitly confirm capture. Browser navigation alone never captures money or issues permissions.
+6. Wait for independent server verification. The completed purchase issues two new permissions while retaining previous grants. The same confirmed use then costs **$0 additional**.
+7. Try “Also use this in television commercials.” The unsupported request stays blocked and cannot be cleared by a checkbox.
+
+The first three steps require no payment. Pending or uncertain payments keep checkout locked until reconciliation resolves them. Do not start replacement purchases or erase financial records to reset a demonstration.
+
+The private narrated demo is 2:05; a public video link will be added after publication. Its existing Sandbox footage is labeled as recorded prior UI, and omitted hosted approval/intermediate edits are disclosed.
+
+## Architecture and safeguards
+
+One Spring Boot application serves the React frontend and REST API. PostgreSQL stores immutable revisions, quotes, grants, durable provider operations and leased jobs. There are no message brokers or separate agent services.
+
+| Component | Version / role |
+| --- | --- |
+| Java / Spring Boot | 17 / 3.5.16 |
+| React / TypeScript / Vite | 19.3.0 / 6.0.3 / 8.3.7 |
+| PostgreSQL | 17.11 |
+| Gemini | 3.5 Flash-Lite GenerateContent structured extraction |
+| PayPal | Sandbox Orders v2, capture verification and signed webhooks |
+| AG Grid Community | 36.2.0; comparison, filters, sorting and pinned total |
+
+- **AI proposes; the backend decides.** Canonical validation checks schema, enums, exact evidence, dates and unresolved requirements. A pending or failed replacement interpretation cannot silently discard an earlier unresolved warning. Manual entry remains a labeled fallback.
+- **Checkout binds accepted state.** Each quote fixes one accepted revision, policy snapshot and entitlement version. Draft changes have no authority over a committed purchase.
+- **Verification precedes fulfillment.** Only a server-verified completed capture matching order, amount, currency and merchant can issue permissions. Webhooks trigger verification; browser messages alone cannot settle a purchase.
+- **Uncertainty is durable.** Stable request IDs, uniqueness constraints, transactions and reconciliation prevent duplicate purchases or partial permission issuance.
+- **History stays intact.** Previous grants are immutable, broader eligible rights remain held, and unsupported use never becomes covered.
+- **Sessions are scoped.** Opaque HttpOnly/SameSite cookies, hashed tokens, exact-origin and CSRF checks, workspace isolation, bounded bodies and persistent quotas protect the application.
+
+AG Grid Community provides the actual comparison workspace and policy-evidence interaction; mobile cards use the same backend result. APIMatic's PayPal Context Plugin informed request/header construction and retry boundaries in the Java adapter. It is development tooling, not a runtime payment processor. AG Studio and Enterprise are not used.
 
 ## Verify
 
-With working Docker, run the suite against a new Testcontainers PostgreSQL 17.11 database:
+With Docker available:
 
 ```bash
 bash scripts/check.sh
 ```
 
-Optional supplemental checks against a pre-existing PostgreSQL 17 instance (the suite always uses an isolated test schema):
+The backend uses isolated PostgreSQL/Testcontainers and synthetic HTTP fixtures for provider faults. Tests do not place payments or call the live model. The corrected release passed **74 backend tests**, including **32 PostgreSQL integration tests**, and **6 browser checks**.
 
-```bash
-CUTLEDGER_TEST_DATABASE_URL=jdbc:postgresql://127.0.0.1:55432/cutledger bash scripts/check.sh
-```
-
-Run browser checks with the app already started:
+With the application running:
 
 ```bash
 source scripts/toolchain.sh
-CUTLEDGER_BROWSER_PATH=/usr/bin/brave-browser npm --prefix frontend run test:e2e
+(cd frontend && npx playwright install chromium)
+npm --prefix frontend run test:e2e
 ```
 
-The private setup form has its own isolated-store regression suite: `CUTLEDGER_BROWSER_PATH=/usr/bin/brave-browser python3 scripts/test_setup.py -v` (with the project Node toolchain active). It never submits test values to the real credential form.
+For an existing compatible browser, set `CUTLEDGER_BROWSER_PATH` to its executable path. Private setup and webhook-proxy regressions can also run independently:
 
-Elsewhere, use Playwright's installed Chromium and omit `CUTLEDGER_BROWSER_PATH`. Tests exercise the real local app/database; rare payment-provider faults use test-only HTTP fixtures. There is no runtime mock payment or hosted-model adapter. See [VERIFICATION](docs/VERIFICATION.md) for dated results, failed attempts, and outstanding checks. Hosted CI is running against the published source; see the repository Actions page for the current result.
+```bash
+python3 scripts/test_setup.py -v
+python3 -W error::ResourceWarning scripts/test_webhook_proxy.py -v
+```
 
-## Architecture and correctness
+The 40-sample real-model evaluation achieved 21/23 exact explicit matches and 17/17 unsafe checkout blocks. Two provider failures and one overcautious clarification remain limitations; these are small synthetic-benchmark results, not general accuracy claims. Runtime integrations use real providers; simulated payment/model adapters are restricted to tests.
 
-One Java 17 / Spring Boot 3.5.16 modular monolith, React 19.3.0 / TypeScript 6.0.3 / Vite 8.3.7 frontend, PostgreSQL 17, and no message broker. Dependencies are pinned in the Maven parent/POM, npm lockfile, toolchain checksums and Docker digests. Java coverage and pricing are deterministic; AI may propose evidence-backed edits only. Immutable revision/quote/payment snapshots, durable request IDs, reconciliation and atomic grant issuance are implemented. Their fault/concurrency tests use isolated provider fixtures; live payment evidence is intentionally omitted from this source snapshot.
+## Webhooks and persistence
 
-Session cookies are opaque, HttpOnly and SameSite=Lax (Secure under HTTPS). Only hashed tokens are stored. Mutations check exact origin and session-bound CSRF. Resource reads enforce workspace ownership, bodies are bounded, and session quotas persist in PostgreSQL. Hosted `demo` mode rejects incomplete integration/access-gate configuration. Hosted verification has not been run; hosting is deferred by the owner.
+Local capture independently verifies PayPal even without a public application URL. To test signed delivery, expose only HTTPS `POST /api/v1/webhooks/paypal`, register that endpoint on the selected Sandbox app, save the returned webhook ID privately and restart the app. `scripts/start_webhook_tunnel.py` and `scripts/register_sandbox_webhook.py` support this optional setup. Registration changes the selected Sandbox app; a temporary tunnel may expire.
 
-The three SVGs are original project artwork; all prices are fictional USD amounts. Initial grants are labeled seeded prior permissions, with no fabricated historical purchases. This evaluates only CutLedger Studio's fixed merchant-defined demo policies; it is not general legal clearance. Code is [MIT](LICENSE); graphics have separate [demo asset terms and provenance](ASSET_TERMS.md).
+PostgreSQL volumes retain the ledger across restart. **Do not run `docker compose down -v`, truncate payment tables or restore over an existing ledger to reset the demo.** Use a fresh browser workspace for a new seeded campaign. Failed provider calls remain visible; bounded retries and quotas do not enable paid billing.
 
-## Status, sponsors, and delivery
+## License and scope
 
-[PROGRESS](docs/PROGRESS.md) is the resume point. [SPONSOR_USAGE](docs/SPONSOR_USAGE.md) distinguishes installed tooling, actual implementation contributions and unverified claims. APIMatic's context informed PayPal request/header and retry boundaries in the implemented Java adapter. AG Grid Community 36.2.0 powers the rights comparison; its server total stays unchanged when rows are filtered. AG Studio is omitted unless all mandatory gates pass first.
-
-The owner chose local operation on 11 November; no hosted resources were purchased. The [local judge guide](docs/LOCAL_DEMO.md) covers setup and the expected journey. The [public MIT source](https://github.com/Samuel2143/CutLedger) is available and its release CI passed. A private 64-second local video draft demonstrates real AI, comparison, quotes and unsupported-use blocking; it contains no payment footage. Public video and final submission remain pending. The unused [Render proposal](docs/HOSTING_PROPOSAL.md) is retained only for future reference.
-
-Local demo workspaces last seven days. The app retains financial and permission history rather than deleting it to reset a demonstration. Future private briefs are server data and must not enter operational logs or public artifacts. Hosting retention and judge access will be documented after approval and live deployment.
+Application code is [MIT licensed](LICENSE). The three original SVGs have separate [demo artwork terms](ASSET_TERMS.txt). Merchant-defined policies, prices and seeded permissions are fictional. Sandbox purchases demonstrate software behavior and do not transfer real commercial media rights. CutLedger does not interpret arbitrary third-party licenses or provide general legal clearance.

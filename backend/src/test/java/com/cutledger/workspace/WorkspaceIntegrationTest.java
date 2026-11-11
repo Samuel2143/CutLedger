@@ -152,11 +152,39 @@ class WorkspaceIntegrationTest {
         assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(id,(UUID)view.get("baseRevisionId"),"AI_CONFIRMED",use,true,List.of(),List.of(),List.of(),List.of()))).hasMessageContaining("Unsupported");
         assertThat(db.queryForObject("SELECT count(*) FROM quote WHERE campaign_id=?",Integer.class,session.campaignId())).isZero();
         assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(null,(UUID)view.get("baseRevisionId"),"MANUAL",use,true,List.of(),List.of(),List.of(),List.of()))).hasMessageContaining("manual revision");
+        for(String warning:List.of("UNSUPPORTED","NEEDS_CLARIFICATION")){
+            db.update("UPDATE interpretation SET status=? WHERE id=?",warning,id);
+            UUID replacement=interpretation(session,brief+" changed "+warning);
+            db.update("UPDATE interpretation SET created_at=created_at+interval '1 second' WHERE id=?",replacement);
+            for(String status:List.of("PENDING","RUNNING","FAILED")){
+                db.update("UPDATE interpretation SET status=? WHERE id=?",status,replacement);
+                assertThatThrownBy(()->campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(null,(UUID)view.get("baseRevisionId"),"MANUAL",use,true,List.of(),List.of(),List.of(),List.of()))).hasMessageContaining("manual revision");
+                assertThat(((Map<?,?>)interpretations.view(session,replacement).get("manualSafeguard")).get("id")).isEqualTo(id);
+            }
+        }
+        db.update("UPDATE interpretation SET status='UNSUPPORTED' WHERE id=?",id);
         String exclusion=((JsonNode)view.get("result")).path("unsupportedRequests").get(0).path("id").asText();
         var manual=campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(id,(UUID)view.get("baseRevisionId"),"MANUAL",use,true,List.of(),List.of(),List.of(exclusion),List.of()));
         assertThat(((JsonNode)manual.get("confirmationEvidence")).path("excludedRequirements").size()).isEqualTo(1);assertThat(manual.get("origin")).isEqualTo("MANUAL");
         var quote=quotes.create(session,session.campaignId(),(UUID)manual.get("id"),"\"2\"",UUID.randomUUID());UUID payment=(UUID)payments.initialize(session,(UUID)quote.get("id"),quote.get("snapshotHash").toString(),"\"2\"",UUID.randomUUID()).get("paymentId");worker.drainOne();settle(new Checkout(browser,quote,payment));
         assertThat(((JsonNode)payments.receipt(session,payment).get("excludedRequirements")).size()).isEqualTo(1);
+    }
+    @Test void successfulReplacementSupersedesWarningsWhileFreshOutageAllowsManualEntry() throws Exception {
+        for(boolean warning:List.of(false,true)){
+            var session=create().session();UUID old=interpretation(session,"Original TV brief");
+            db.update("UPDATE interpretation SET status=? WHERE id=?",warning?"UNSUPPORTED":"FAILED",old);
+            UUID newer=interpretation(session,"Keep the visuals, but we're now running this as paid advertising in the US and UK for 90 days.");
+            if(warning){
+                when(ai.extract(any())).thenReturn(new InterpretationProvider.ExtractionResult(livePublicOutput(),"gemini-3.5-flash-lite","hash",1,json.createObjectNode()));
+                db.update("UPDATE interpretation SET run_after=to_timestamp(0) WHERE id=?",newer);
+                clock.advance(Duration.ofSeconds(6));aiWorker.drainOne();
+                assertThat(interpretations.view(session,newer).get("status")).isEqualTo("READY");
+            }else db.update("UPDATE interpretation SET status='FAILED' WHERE id=?",newer);
+            db.update("UPDATE interpretation SET created_at=created_at+interval '2 seconds' WHERE id=?",newer);
+            var base=(UUID)interpretations.view(session,newer).get("baseRevisionId");
+            var use=new CampaignService.Usage(1,Set.of("PAID_ADS"),Set.of("US","GB"),Set.of("INSTAGRAM"),LocalDate.of(2026,11,15),LocalDate.of(2027,2,13));
+            assertThat(campaigns.confirm(session,session.campaignId(),"\"1\"",UUID.randomUUID(),new CampaignService.Confirmation(null,base,"MANUAL",use,true,List.of(),List.of(),List.of(),List.of())).get("origin")).isEqualTo("MANUAL");
+        }
     }
     @Test void storedIssueNeedsActualMatchingFieldResolutionAndCorrectionProvenance() throws Exception {
         var session=create().session();var output=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(livePublicOutput());
