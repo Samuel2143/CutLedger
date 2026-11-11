@@ -107,12 +107,21 @@ test('draft survives cancelled Back navigation and policy dialog returns keyboar
   const evidence=page.getByRole('button',{name:'Policy evidence for Harbor Lines',exact:true});await evidence.focus();await page.keyboard.press('Enter');await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).not.toBeVisible();await expect(evidence).toBeFocused();
 });
 
- test('blocked zero assessment and unconfirmed draft never claim coverage',async({page})=>{
+for(const aiAvailable of [false,true])test(`blocked zero assessment and draft never claim coverage (AI available: ${aiAvailable})`,async({page})=>{
+ // TEST_ONLY diagnostic availability controls presentation; no extraction or provider request is made.
+ await page.route('**/api/v1/diagnostics',async route=>{const response=await route.fetch();await route.fulfill({json:{...await response.json(),aiAvailable}});});
  await openCampaign(page);
  await page.route('**/assessment',async route=>{const response=await route.fetch();const body=await response.json();body.totalDeltaMinor=0;body.canQuote=false;body.rows=body.rows.map((r:object)=>({...r,status:'REVIEW_REQUIRED',deltaMinor:0,reasonCodes:['PAYMENT_REVIEW']}));await route.fulfill({json:body});});
  await page.reload();await expect(page.getByRole('heading',{name:'Permission review required.'})).toBeVisible();await expect(page.getByRole('heading',{name:'Rights already held.'})).toHaveCount(0);
- await page.getByLabel('Client brief',{exact:true}).fill('Also television');await expect(page.getByRole('heading',{name:'Draft needs review.'})).toBeVisible();await expect(page.getByText('This assessment does not cover your unconfirmed draft.',{exact:false})).toBeVisible();
- });
+ if(aiAvailable){
+  await page.getByLabel('Client brief',{exact:true}).fill('Also television');
+ }else{
+  await expect(page.getByLabel('Client brief',{exact:true})).toBeDisabled();
+  await page.getByText('Enter usage manually',{exact:true}).click();
+  await page.locator('.manual-usage').getByRole('textbox',{name:/^Territories/}).fill('CA');
+ }
+ await expect(page.getByRole('heading',{name:'Draft needs review.'})).toBeVisible();await expect(page.getByText('This assessment does not cover your unconfirmed draft.',{exact:false})).toBeVisible();
+});
  test('manual fallback retains prior warning during a pending replacement',async({page})=>{
  const fixtureId='00000000-0000-4000-8000-000000000001';let usage:unknown,base:string;
  await page.route('**/api/v1/campaigns/*',async route=>{const response=await route.fetch();const body=await response.json();if(body.latestRevision){usage=body.latestRevision.usage;base=body.latestRevision.id;body.latestInterpretationId=fixtureId;}await route.fulfill({json:body});});

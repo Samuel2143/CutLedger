@@ -98,7 +98,7 @@ With Docker available:
 bash scripts/check.sh
 ```
 
-The backend uses isolated PostgreSQL/Testcontainers and synthetic HTTP fixtures for provider faults. Tests do not place payments or call the live model. The corrected release passed **74 backend tests**, including **32 PostgreSQL integration tests**, and **6 browser checks**.
+The backend uses isolated PostgreSQL/Testcontainers and synthetic HTTP fixtures for provider faults. Tests do not place payments or call the live model. The corrected release passed **74 backend tests**, including **32 PostgreSQL integration tests**, and **7 browser checks**.
 
 With the application running:
 
