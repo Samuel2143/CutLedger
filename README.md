@@ -4,6 +4,12 @@
 
 CutLedger helps creative teams buy eligible media-rights upgrades from a participating asset studio. Gemini turns a revised brief into evidence-backed proposed edits. The user reviews those edits; deterministic merchant policies decide coverage and price. PayPal Sandbox handles the purchase, and independently verified payment controls permission issuance.
 
+## Hosted demo
+
+Open **https://cutledger-demo.onrender.com**. Judges obtain the private demo code and separate Personal Sandbox buyer instructions through the private Devpost testing field described below. No local installation is needed for the hosted path.
+
+Render Free sleeps after inactivity, so the first visit can take several minutes. Free resource quotas can interrupt availability. The local setup below remains a fallback; paid hosting is not required.
+
 ![Rights comparison](docs/evidence/comparison-1440x900.png)
 
 ## Example
@@ -55,13 +61,13 @@ Use a separate **Personal Sandbox buyer**, eligible to pay the selected seller, 
 
 ### Judge access
 
-This is a local test build, not a hosted website. Installation and dependency downloads come before the five-minute walkthrough.
+For hackathon judges, the access-delivery channel is the submission’s **“Testing instructions or credentials the judges need to test your project”** field in Devpost Additional info, restricted to judges and organizers. Obtain the hosted demo code and separate eligible Personal Sandbox buyer login there. Seller integration credentials and the Gemini key stay server-side when using the hosted app.
 
-For hackathon judges, the access-delivery channel is the submission’s **“Testing instructions or credentials the judges need to test your project”** field in Devpost Additional info, which is restricted to judges and organizers. The private packet must contain the compatible Sandbox seller app credentials, a Gemini free-tier key, a separate eligible Personal Sandbox buyer login, exact source revision and setup steps. Credentials are not distributed through this repository, GitHub issues, the video or browser-session exports.
+The same private field provides the compatible seller app credentials, Gemini free-tier key, exact source revision and setup steps for the local fallback. Local installation and dependency downloads come before the five-minute walkthrough. If the packet is absent when judging, ask the hackathon organizers to relay a private access request through Devpost.
 
-**Private access delivery is still pending.** If the packet is absent when judging, ask the hackathon organizers to relay a private access request to the entrant through Devpost. Do not post passwords or API keys publicly. Developers may instead use their own compatible Sandbox accounts and model key.
+Credentials are not distributed through this repository, GitHub issues, the video or browser-session exports. Do not post passwords or API keys publicly. Developers may instead use their own compatible Sandbox accounts and model key.
 
-Fresh source installation with an empty database and no integration keys can verify startup, manual comparison and error handling. It cannot verify real Gemini extraction, buyer approval, capture or signed webhook delivery. Those steps need the private packet and a separately authorized end-to-end test; existing demo cookies are not a substitute.
+Fresh local installation with an empty database and no integration keys can verify startup, manual comparison and error handling. Real Gemini extraction, buyer approval, capture and signed webhook delivery require working private test access; existing demo cookies are not a substitute.
 
 ## Walk through the demo
 
@@ -75,7 +81,7 @@ Fresh source installation with an empty database and no integration keys can ver
 
 The first three steps require no payment. Pending or uncertain payments keep checkout locked until reconciliation resolves them. Do not start replacement purchases or erase financial records to reset a demonstration.
 
-The private narrated demo is 2:05; a public video link will be added after publication. Its existing Sandbox footage is labeled as recorded prior UI, and omitted hosted approval/intermediate edits are disclosed.
+Watch the [2:05 narrated demo on YouTube](https://www.youtube.com/watch?v=gtKnsMyU3TU). Its existing Sandbox footage is labeled as recorded prior UI, and omitted hosted approval/intermediate edits are disclosed.
 
 ## Architecture and safeguards
 
